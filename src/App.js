@@ -3,7 +3,7 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import BrowseNeeds from "./pages/BrowseNeeds";
-import InstitutionDashboard from './pages/InstitutionDashboard';
+import InstitutionDashboard from "  ./pages/InstitutionDashboard";
 function App() {
   return (
     <Router>
