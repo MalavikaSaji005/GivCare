@@ -1,153 +1,193 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { db } from '../firebase'; 
+import { ref, push, onValue, remove, update } from "firebase/database";
 
 const InstitutionDashboard = () => {
-  // 1. State to control the Pop-up (Modal)
+  const [needs, setNeeds] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [editId, setEditId] = useState(null); // Track which item we are editing
   
-  // 2. State for the Form Inputs
-  const [item, setItem] = useState("");
-  const [qty, setQty] = useState("");
+  const [formData, setFormData] = useState({
+    item: '',
+    qty: '',
+    priority: 'Normal',
+    expiry: '',
+    status: 'Pending'
+  });
 
-  // 3. State for the list of Needs (starts with your sample data)
-  const [needs, setNeeds] = useState([
-    { id: 1, item: "Rice", qty: "50kg", status: "Pending", color: "text-orange-500" },
-    { id: 2, item: "Medicine", qty: "30", status: "Fulfilled", color: "text-green-500" },
-    { id: 3, item: "Blankets", qty: "10", status: "Update", color: "text-blue-500" },
-  ]);
+  // Fetch Data
+  useEffect(() => {
+    const needsRef = ref(db, 'needs');
+    onValue(needsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const today = new Date().toISOString().split('T')[0];
+        const list = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        setNeeds(list.reverse());
+      } else {
+        setNeeds([]);
+      }
+    });
+  }, []);
 
-  // 4. Function to handle saving the new need
-  const handleSaveNeed = (e) => {
+  // Handle Create or Update
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newEntry = {
-      id: Date.now(),
-      item: item,
-      qty: qty,
-      status: "Pending",
-      color: "text-orange-500"
-    };
-    setNeeds([newEntry, ...needs]); // Adds new need to the top of the list
-    setShowModal(false); // Closes the pop-up
-    setItem(""); // Clears input
-    setQty("");  // Clears input
+    try {
+      if (editId) {
+        // UPDATE EXISTING POST
+        const itemRef = ref(db, `needs/${editId}`);
+        await update(itemRef, formData);
+        alert("Updated successfully!");
+      } else {
+        // CREATE NEW POST
+        const needsRef = ref(db, 'needs');
+        await push(needsRef, {
+          ...formData,
+          institutionName: "Hope Old Age Home",
+          donated: "0",
+          createdAt: new Date().toISOString()
+        });
+        alert("Posted successfully!");
+      }
+      closeModal();
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
+  // Handle Delete
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      try {
+        await remove(ref(db, `needs/${id}`));
+      } catch (error) {
+        console.error("Delete error:", error);
+      }
+    }
+  };
+
+  // Open Modal for Edit
+  const openEditModal = (need) => {
+    setEditId(need.id);
+    setFormData({
+      item: need.item,
+      qty: need.qty,
+      priority: need.priority,
+      expiry: need.expiry,
+      status: need.status
+    });
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setEditId(null);
+    setFormData({ item: '', qty: '', priority: 'Normal', expiry: '', status: 'Pending' });
+  };
+
+  const filteredNeeds = needs.filter(need => 
+    need.item.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="flex min-h-screen bg-gray-100 font-sans relative">
-      
-      {/* SIDEBAR */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-6 text-2xl font-bold text-blue-600">GivCare</div>
-        <nav className="flex-1 px-4 space-y-2 text-gray-600">
-          <div className="flex items-center p-3 bg-blue-50 text-blue-600 rounded-lg font-medium cursor-pointer">
-            <span className="mr-3">📊</span> Dashboard
-          </div>
-          <div className="flex items-center p-3 hover:bg-gray-50 rounded-lg cursor-pointer"><span className="mr-3">👤</span> Profile</div>
-          <div className="flex items-center p-3 hover:bg-gray-50 rounded-lg cursor-pointer"><span className="mr-3">✉️</span> Post Needs</div>
-        </nav>
-        <div className="p-6 text-red-500 font-medium cursor-pointer border-t"><span>🚪</span> Logout</div>
-      </div>
-
-      {/* MAIN CONTENT */}
+    <div className="flex min-h-screen bg-[#F8FAFC]">
       <div className="flex-1 p-8">
-        <header className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-800">Institution Dashboard</h1>
-          <div className="w-10 h-10 bg-gray-300 rounded-full border-2 border-white shadow-sm"></div>
-        </header>
-
-        {/* STATS */}
-        <div className="grid grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-            <p className="text-gray-500 text-sm font-semibold">Pending Needs</p>
-            <p className="text-3xl font-bold text-blue-600">{needs.filter(n => n.status === "Pending").length}</p>
+        
+        {/* HEADER */}
+        <div className="flex justify-between items-center mb-10">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Institution Dashboard</h1>
+            <p className="text-gray-500 mt-1">Manage and track community needs.</p>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-            <p className="text-gray-500 text-sm font-semibold">Fulfilled</p>
-            <p className="text-3xl font-bold text-green-600">28</p>
-          </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-            <p className="text-gray-500 text-sm font-semibold">Volunteers</p>
-            <p className="text-3xl font-bold text-purple-600">05</p>
-          </div>
+          <button onClick={() => setShowModal(true)} className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-6 py-3 rounded-xl font-semibold shadow-md transition-all">+ Post New Need</button>
         </div>
 
-        {/* TABLE */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+        {/* METRICS (Same as before) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <p className="text-sm font-medium text-gray-500 uppercase">Funding Needs</p>
+                <h3 className="text-3xl font-bold text-gray-900 mt-2">12</h3>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <p className="text-sm font-medium text-gray-500 uppercase">Donations</p>
+                <h3 className="text-3xl font-bold text-gray-900 mt-2">28</h3>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <p className="text-sm font-medium text-gray-500 uppercase">Volunteers</p>
+                <h3 className="text-3xl font-bold text-gray-900 mt-2">05</h3>
+            </div>
+        </div>
+
+        {/* TABLE SECTION */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <h2 className="text-lg font-bold text-gray-800">Current Needs</h2>
-            {/* CLICKING THIS NOW OPENS THE MODAL */}
-            <button 
-              onClick={() => setShowModal(true)}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition shadow-md"
-            >
-              + Post New
-            </button>
+            <input 
+                type="text" 
+                placeholder="Search..." 
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-4 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none w-full md:w-64"
+            />
           </div>
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 text-gray-400 text-xs uppercase tracking-wider">
-              <tr>
-                <th className="px-6 py-4 font-semibold">Item</th>
-                <th className="px-6 py-4 font-semibold">Qty</th>
-                <th className="px-6 py-4 font-semibold">Status</th>
-                <th className="px-6 py-4 font-semibold text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {needs.map((need) => (
-                <tr key={need.id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 text-gray-800 font-medium">{need.item}</td>
-                  <td className="px-6 py-4 text-gray-600">{need.qty}</td>
-                  <td className={`px-6 py-4 font-bold ${need.color}`}>{need.status}</td>
-                  <td className="px-6 py-4 text-center">
-                    <button className="text-blue-600 hover:underline text-sm font-bold">Donate</button>
-                  </td>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50/50 text-gray-400 text-[11px] uppercase font-bold tracking-wider">
+                  <th className="px-6 py-4">Item</th>
+                  <th className="px-6 py-4">Qty</th>
+                  <th className="px-6 py-4">Priority</th>
+                  <th className="px-6 py-4">Expiry</th>
+                  <th className="px-6 py-4">Donated</th>
+                  <th className="px-6 py-4">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filteredNeeds.map((need) => (
+                  <tr key={need.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-gray-800">{need.item}</td>
+                    <td className="px-6 py-4 text-gray-600">{need.qty}</td>
+                    <td className="px-6 py-4">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${need.priority === 'Urgent' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>{need.priority}</span>
+                    </td>
+                    <td className="px-6 py-4 text-gray-500 text-sm">{need.expiry}</td>
+                    <td className="px-6 py-4 text-gray-600 font-medium">{need.donated || "0"}</td>
+                    <td className="px-6 py-4 flex gap-3">
+                      <button onClick={() => openEditModal(need)} className="text-blue-600 hover:text-blue-800 font-bold text-sm">Edit</button>
+                      <button onClick={() => handleDelete(need.id)} className="text-red-500 hover:text-red-700 font-bold text-sm">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {/* --- POST NEED MODAL (The Pop-up Form) --- */}
+      {/* MODAL (Handles both Add and Edit) */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all scale-100">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Post a New Need</h2>
-            <form onSubmit={handleSaveNeed} className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-600 mb-1">Item Name</label>
-                <input 
-                  type="text" 
-                  className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="e.g. Rice, Medicine"
-                  value={item}
-                  onChange={(e) => setItem(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-600 mb-1">Quantity</label>
-                <input 
-                  type="text" 
-                  className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="e.g. 50kg, 20 packs"
-                  value={qty}
-                  onChange={(e) => setQty(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <button 
-                  type="button" 
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg"
-                >
-                  Post Now
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">{editId ? "Edit Post" : "Post New Need"}</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input type="text" placeholder="Item Name" value={formData.item} className="w-full p-3 bg-gray-50 border rounded-xl outline-none" required
+                onChange={(e) => setFormData({...formData, item: e.target.value})} />
+              <input type="text" placeholder="Quantity" value={formData.qty} className="w-full p-3 bg-gray-50 border rounded-xl outline-none" required
+                onChange={(e) => setFormData({...formData, qty: e.target.value})} />
+              <select value={formData.priority} className="w-full p-3 bg-gray-50 border rounded-xl outline-none"
+                onChange={(e) => setFormData({...formData, priority: e.target.value})}>
+                <option value="Normal">Normal Priority</option>
+                <option value="Urgent">Urgent Priority</option>
+              </select>
+              <input type="date" value={formData.expiry} className="w-full p-3 bg-gray-50 border rounded-xl outline-none" required
+                onChange={(e) => setFormData({...formData, expiry: e.target.value})} />
+              
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={closeModal} className="flex-1 py-3 bg-gray-100 rounded-xl font-bold">Cancel</button>
+                <button type="submit" className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg">
+                  {editId ? "Save Changes" : "Post Now"}
                 </button>
               </div>
             </form>
