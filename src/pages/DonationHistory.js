@@ -17,6 +17,8 @@ export default function DonationHistory({ donations, setDonations }) {
                 }));
 
                 setDonations(donationList);
+            } else {
+                setDonations([]);
             }
         });
 

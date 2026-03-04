@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { ref, push } from "firebase/database";
 import { db } from "../firebase";
-
+import { useNavigate } from "react-router-dom";
 export default function BrowseNeeds() {
-
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [priority, setPriority] = useState("all");
@@ -148,10 +148,10 @@ export default function BrowseNeeds() {
               {/* Priority Badge */}
               <span
                 className={`px-3 py-1 text-sm rounded-full ${isClosed
-                    ? "bg-gray-200 text-gray-600"
-                    : need.priority === "urgent"
-                      ? "bg-red-100 text-red-600"
-                      : "bg-green-100 text-green-600"
+                  ? "bg-gray-200 text-gray-600"
+                  : need.priority === "urgent"
+                    ? "bg-red-100 text-red-600"
+                    : "bg-green-100 text-green-600"
                   }`}
               >
                 {isClosed
@@ -170,8 +170,8 @@ export default function BrowseNeeds() {
                   setError("");
                 }}
                 className={`mt-4 w-full py-2 rounded-lg ${isClosed
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
                   }`}
               >
                 {isClosed ? "Closed" : "Donate"}
@@ -262,6 +262,8 @@ export default function BrowseNeeds() {
                   push(ref(db, "donations"), newDonation);
 
                   setSelectedNeed(null);
+                  // Navigate to history page
+                  navigate("/donation-history");
 
                 }}
                 className="px-4 py-2 bg-blue-600 text-white rounded"
