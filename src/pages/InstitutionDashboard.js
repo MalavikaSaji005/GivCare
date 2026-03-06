@@ -6,7 +6,7 @@ const InstitutionDashboard = () => {
   const [needs, setNeeds] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editId, setEditId] = useState(null); // Track which item we are editing
+  const [editId, setEditId] = useState(null);
   
   const [formData, setFormData] = useState({
     item: '',
@@ -16,13 +16,12 @@ const InstitutionDashboard = () => {
     status: 'Pending'
   });
 
-  // Fetch Data
+  // Load data from Firebase
   useEffect(() => {
     const needsRef = ref(db, 'needs');
     onValue(needsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const today = new Date().toISOString().split('T')[0];
         const list = Object.keys(data).map(key => ({ id: key, ...data[key] }));
         setNeeds(list.reverse());
       } else {
@@ -31,19 +30,14 @@ const InstitutionDashboard = () => {
     });
   }, []);
 
-  // Handle Create or Update
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editId) {
-        // UPDATE EXISTING POST
-        const itemRef = ref(db, `needs/${editId}`);
-        await update(itemRef, formData);
+        await update(ref(db, `needs/${editId}`), formData);
         alert("Updated successfully!");
       } else {
-        // CREATE NEW POST
-        const needsRef = ref(db, 'needs');
-        await push(needsRef, {
+        await push(ref(db, 'needs'), {
           ...formData,
           institutionName: "Hope Old Age Home",
           donated: "0",
@@ -57,26 +51,20 @@ const InstitutionDashboard = () => {
     }
   };
 
-  // Handle Delete
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this post?")) {
-      try {
-        await remove(ref(db, `needs/${id}`));
-      } catch (error) {
-        console.error("Delete error:", error);
-      }
+    if (window.confirm("Are you sure?")) {
+      await remove(ref(db, `needs/${id}`));
     }
   };
 
-  // Open Modal for Edit
   const openEditModal = (need) => {
     setEditId(need.id);
     setFormData({
       item: need.item,
       qty: need.qty,
-      priority: need.priority,
-      expiry: need.expiry,
-      status: need.status
+      priority: need.priority || 'Normal',
+      expiry: need.expiry || '',
+      status: need.status || 'Pending'
     });
     setShowModal(true);
   };
@@ -92,46 +80,57 @@ const InstitutionDashboard = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC]">
+    <div className="flex min-h-screen bg-gray-100 font-sans">
+      {/* SIDEBAR */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        <div className="p-6 text-2xl font-bold text-blue-600">GivCare</div>
+        <nav className="flex-1 px-4 space-y-2 text-gray-600">
+          <div className="flex items-center p-3 bg-blue-50 text-blue-600 rounded-lg font-medium cursor-pointer">
+            <span className="mr-3">📊</span> Dashboard
+          </div>
+          <div className="flex items-center p-3 hover:bg-gray-50 rounded-lg cursor-pointer"><span className="mr-3">👤</span> Profile</div>
+          <div className="flex items-center p-3 hover:bg-gray-50 rounded-lg cursor-pointer"><span className="mr-3">✉️</span> Post Needs</div>
+        </nav>
+        <div className="p-6 text-red-500 font-medium cursor-pointer border-t"><span>🚪</span> Logout</div>
+      </div>
+
+      {/* MAIN CONTENT */}
       <div className="flex-1 p-8">
-        
-        {/* HEADER */}
         <div className="flex justify-between items-center mb-10">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Institution Dashboard</h1>
             <p className="text-gray-500 mt-1">Manage and track community needs.</p>
           </div>
-          <button onClick={() => setShowModal(true)} className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-6 py-3 rounded-xl font-semibold shadow-md transition-all">+ Post New Need</button>
+          <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md">+ Post New Need</button>
         </div>
 
-        {/* METRICS (Same as before) */}
+        {/* METRICS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <p className="text-sm font-medium text-gray-500 uppercase">Funding Needs</p>
-                <h3 className="text-3xl font-bold text-gray-900 mt-2">12</h3>
-            </div>
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <p className="text-sm font-medium text-gray-500 uppercase">Donations</p>
-                <h3 className="text-3xl font-bold text-gray-900 mt-2">28</h3>
-            </div>
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <p className="text-sm font-medium text-gray-500 uppercase">Volunteers</p>
-                <h3 className="text-3xl font-bold text-gray-900 mt-2">05</h3>
-            </div>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <p className="text-sm font-medium text-gray-500 uppercase">Funding Needs</p>
+            <h3 className="text-3xl font-bold text-gray-900 mt-2">12</h3>
+          </div>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <p className="text-sm font-medium text-gray-500 uppercase">Donations</p>
+            <h3 className="text-3xl font-bold text-gray-900 mt-2">28</h3>
+          </div>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <p className="text-sm font-medium text-gray-500 uppercase">Volunteers</p>
+            <h3 className="text-3xl font-bold text-gray-900 mt-2">05</h3>
+          </div>
         </div>
 
         {/* TABLE SECTION */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="p-6 border-b border-gray-50 flex justify-between items-center">
             <h2 className="text-lg font-bold text-gray-800">Current Needs</h2>
             <input 
-                type="text" 
-                placeholder="Search..." 
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-4 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none w-full md:w-64"
+              type="text" 
+              placeholder="Search..." 
+              className="p-2 border rounded-lg text-sm outline-none"
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
@@ -150,13 +149,15 @@ const InstitutionDashboard = () => {
                     <td className="px-6 py-4 font-semibold text-gray-800">{need.item}</td>
                     <td className="px-6 py-4 text-gray-600">{need.qty}</td>
                     <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${need.priority === 'Urgent' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>{need.priority}</span>
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${need.priority === 'Urgent' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                        {need.priority}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-gray-500 text-sm">{need.expiry}</td>
                     <td className="px-6 py-4 text-gray-600 font-medium">{need.donated || "0"}</td>
                     <td className="px-6 py-4 flex gap-3">
-                      <button onClick={() => openEditModal(need)} className="text-blue-600 hover:text-blue-800 font-bold text-sm">Edit</button>
-                      <button onClick={() => handleDelete(need.id)} className="text-red-500 hover:text-red-700 font-bold text-sm">Delete</button>
+                      <button onClick={() => openEditModal(need)} className="text-blue-600 font-bold text-sm">Edit</button>
+                      <button onClick={() => handleDelete(need.id)} className="text-red-500 font-bold text-sm">Delete</button>
                     </td>
                   </tr>
                 ))}
@@ -166,29 +167,34 @@ const InstitutionDashboard = () => {
         </div>
       </div>
 
-      {/* MODAL (Handles both Add and Edit) */}
+      {/* MODAL */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">{editId ? "Edit Post" : "Post New Need"}</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">{editId ? "Edit Need" : "Post New Need"}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <input type="text" placeholder="Item Name" value={formData.item} className="w-full p-3 bg-gray-50 border rounded-xl outline-none" required
-                onChange={(e) => setFormData({...formData, item: e.target.value})} />
-              <input type="text" placeholder="Quantity" value={formData.qty} className="w-full p-3 bg-gray-50 border rounded-xl outline-none" required
-                onChange={(e) => setFormData({...formData, qty: e.target.value})} />
-              <select value={formData.priority} className="w-full p-3 bg-gray-50 border rounded-xl outline-none"
-                onChange={(e) => setFormData({...formData, priority: e.target.value})}>
+              <input 
+                type="text" placeholder="Item Name" className="w-full p-3 border rounded-xl"
+                value={formData.item} onChange={(e) => setFormData({...formData, item: e.target.value})} required
+              />
+              <input 
+                type="text" placeholder="Quantity" className="w-full p-3 border rounded-xl"
+                value={formData.qty} onChange={(e) => setFormData({...formData, qty: e.target.value})} required
+              />
+              <select 
+                className="w-full p-3 border rounded-xl" value={formData.priority}
+                onChange={(e) => setFormData({...formData, priority: e.target.value})}
+              >
                 <option value="Normal">Normal Priority</option>
                 <option value="Urgent">Urgent Priority</option>
               </select>
-              <input type="date" value={formData.expiry} className="w-full p-3 bg-gray-50 border rounded-xl outline-none" required
-                onChange={(e) => setFormData({...formData, expiry: e.target.value})} />
-              
-              <div className="flex gap-3 pt-4">
+              <input 
+                type="date" className="w-full p-3 border rounded-xl"
+                value={formData.expiry} onChange={(e) => setFormData({...formData, expiry: e.target.value})} required
+              />
+              <div className="flex gap-3 mt-6">
                 <button type="button" onClick={closeModal} className="flex-1 py-3 bg-gray-100 rounded-xl font-bold">Cancel</button>
-                <button type="submit" className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg">
-                  {editId ? "Save Changes" : "Post Now"}
-                </button>
+                <button type="submit" className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">Post Now</button>
               </div>
             </form>
           </div>
