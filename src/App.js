@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
+import { Toaster } from "react-hot-toast";
 
 /* Main Pages */
 import Landing from "./pages/Landing";
@@ -31,6 +32,8 @@ function App() {
 
   return (
     <Router>
+      <Toaster position="top-right" />
+
       <Routes>
 
         {/* MAIN PAGES */}
