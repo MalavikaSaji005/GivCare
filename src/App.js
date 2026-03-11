@@ -8,6 +8,7 @@ import Register from "./pages/Register";
 import BrowseNeeds from "./pages/BrowseNeeds";
 import InstitutionDashboard from "./pages/InstitutionDashboard";
 import DonationHistory from "./pages/DonationHistory";
+import DashboardHome from "./pages/DashboardHome";
 
 /* Volunteer Module */
 import VolunteerLayout from "./pages/volunteer/VolunteerLayout";
@@ -37,6 +38,10 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        {/* DASHBOARD */}
+        <Route path="/dashboard" element={<DashboardHome />} />
+
         <Route path="/institution" element={<InstitutionDashboard />} />
 
         <Route

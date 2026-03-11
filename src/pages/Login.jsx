@@ -2,17 +2,22 @@ import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { ref, get } from "firebase/database";
 import { auth, db } from "../firebase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    setErrorMsg("");
+    setLoading(true);
 
     try {
 
@@ -31,7 +36,7 @@ export default function Login() {
         const role = snapshot.val().role;
 
         if (role === "donor") {
-          navigate("/browse");
+          navigate("/dashboard");
         } else {
           navigate("/institution");
         }
@@ -39,7 +44,25 @@ export default function Login() {
       }
 
     } catch (error) {
-      alert(error.message);
+
+      if (error.code === "auth/user-not-found") {
+        setErrorMsg("⚠ No account found with this email.");
+      }
+
+      else if (error.code === "auth/wrong-password") {
+        setErrorMsg("⚠ Incorrect password.");
+      }
+
+      else if (error.code === "auth/invalid-email") {
+        setErrorMsg("⚠ Invalid email address.");
+      }
+
+      else {
+        setErrorMsg("⚠ Login failed. Please try again.");
+      }
+
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,6 +95,18 @@ export default function Login() {
           Login to GivCare
         </h2>
 
+        {/* Error Message */}
+        {errorMsg && (
+          <p style={{
+            color: "red",
+            fontSize: "14px",
+            marginBottom: "12px",
+            textAlign: "center"
+          }}>
+            {errorMsg}
+          </p>
+        )}
+
         <input
           type="email"
           placeholder="Email"
@@ -102,18 +137,19 @@ export default function Login() {
 
         <button
           type="submit"
+          disabled={loading}
           style={{
             width: "100%",
             padding: "12px",
-            background: "#00563B",
+            background: loading ? "#7da79a" : "#00563B",
             color: "white",
             border: "none",
             borderRadius: "6px",
             fontWeight: "bold",
-            cursor: "pointer"
+            cursor: loading ? "not-allowed" : "pointer"
           }}
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         <p style={{
@@ -122,8 +158,8 @@ export default function Login() {
           fontSize: "14px"
         }}>
           Don't have an account?{" "}
-          <a
-            href="/register"
+          <Link
+            to="/register"
             style={{
               color: "#00563B",
               textDecoration: "none",
@@ -131,7 +167,7 @@ export default function Login() {
             }}
           >
             Register
-          </a>
+          </Link>
         </p>
 
       </form>

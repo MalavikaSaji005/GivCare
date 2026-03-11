@@ -1,108 +1,140 @@
 import { ref, onValue, update } from "firebase/database";
-import { db } from "../firebase";
+import { db, auth } from "../firebase";
 import { useEffect } from "react";
+import DashboardLayout from "../components/DashboardLayout";
+import { useNavigate } from "react-router-dom";
 
 export default function DonationHistory({ donations, setDonations }) {
 
-    useEffect(() => {
-        const donationRef = ref(db, "donations");
+  const navigate = useNavigate();
 
-        onValue(donationRef, (snapshot) => {
-            const data = snapshot.val();
+  useEffect(() => {
 
-            if (data) {
-                const donationList = Object.keys(data).map((key) => ({
-                    id: key,
-                    ...data[key]
-                }));
+    const user = auth.currentUser;
 
-                setDonations(donationList);
-            } else {
-                setDonations([]);
-            }
-        });
+    // If not logged in, redirect
+    if (!user) {
+      navigate("/login");
+      return;
+    }
 
-    }, [setDonations]);
+    const donationRef = ref(db, "donations");
 
-    return (
-        <div className="min-h-screen bg-gray-100 p-8">
+    onValue(donationRef, (snapshot) => {
 
-            <h1 className="text-3xl font-bold mb-6">
-                Donation History
-            </h1>
+      const data = snapshot.val();
 
-            {donations.length === 0 ? (
-                <p className="text-gray-500">No donations yet.</p>
-            ) : (
-                <div className="space-y-4">
+      if (data) {
 
-                    {donations.map((donation) => (
-                        <div
-                            key={donation.id}
-                            className="bg-white p-4 rounded-lg shadow"
-                        >
+        const donationList = Object.keys(data)
+          .map((key) => ({
+            id: key,
+            ...data[key]
+          }))
+          // ⭐ Show only this user's donations
+          .filter((donation) => donation.userId === user.uid);
 
-                            <p className="text-xs text-gray-400">
-                                ID: {donation.id}
-                            </p>
+        setDonations(donationList);
 
-                            <p><strong>Item:</strong> {donation.itemName}</p>
-                            <p><strong>Institution:</strong> {donation.institution}</p>
-                            <p><strong>Quantity:</strong> {donation.quantity}</p>
-                            <p><strong>Date:</strong> {donation.date}</p>
+      } else {
+        setDonations([]);
+      }
 
-                            <div className="mt-2">
-                                <strong>Status:</strong>{" "}
-                                <span
-                                    className={`px-3 py-1 rounded-full text-sm ${donation.status === "Pending"
-                                        ? "bg-yellow-100 text-yellow-700"
-                                        : donation.status === "Confirmed"
-                                            ? "bg-blue-100 text-blue-700"
-                                            : "bg-green-100 text-green-700"
-                                        }`}
-                                >
-                                    {donation.status}
-                                </span>
-                            </div>
+    });
 
-                            {/* Status Control Buttons */}
+  }, [setDonations, navigate]);
 
-                            {donation.status === "Pending" && (
-                                <button
-                                    onClick={() => {
-                                        const donationRef = ref(db, `donations/${donation.id}`);
+  return (
 
-                                        update(donationRef, {
-                                            status: "Confirmed"
-                                        });
-                                    }}
-                                    className="mt-2 px-3 py-1 bg-blue-600 text-white rounded text-sm"
-                                >
-                                    Mark as Confirmed
-                                </button>
-                            )}
+    <DashboardLayout>
 
-                            {donation.status === "Confirmed" && (
-                                <button
-                                    onClick={() => {
-                                        const donationRef = ref(db, `donations/${donation.id}`);
+      <h1
+        style={{
+          fontSize: "28px",
+          fontWeight: "bold",
+          color: "#00563B",
+          marginBottom: "25px"
+        }}
+      >
+        Donation History
+      </h1>
 
-                                        update(donationRef, {
-                                            status: "Completed"
-                                        });
-                                    }}
-                                    className="mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm"
-                                >
-                                    Mark as Completed
-                                </button>
-                            )}
+      {donations.length === 0 ? (
+        <p style={{ color: "#666" }}>No donations yet.</p>
+      ) : (
+        <div className="space-y-4">
 
-                        </div>
-                    ))}
+          {donations.map((donation) => (
 
-                </div>
-            )}
+            <div
+              key={donation.id}
+              className="bg-white p-5 rounded-lg shadow"
+            >
+
+              <p className="text-xs text-gray-400 mb-1">
+                ID: {donation.id}
+              </p>
+
+              <p><strong>Item:</strong> {donation.itemName}</p>
+              <p><strong>Institution:</strong> {donation.institution}</p>
+              <p><strong>Quantity:</strong> {donation.quantity}</p>
+              <p><strong>Date:</strong> {donation.date}</p>
+
+              <div className="mt-2">
+                <strong>Status:</strong>{" "}
+                <span
+                  className={`px-3 py-1 rounded-full text-sm ${
+                    donation.status === "Pending"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : donation.status === "Confirmed"
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-green-100 text-green-700"
+                  }`}
+                >
+                  {donation.status}
+                </span>
+              </div>
+
+              {/* Status Buttons */}
+
+              {donation.status === "Pending" && (
+                <button
+                  onClick={() => {
+                    const donationRef = ref(db, `donations/${donation.id}`);
+
+                    update(donationRef, {
+                      status: "Confirmed"
+                    });
+                  }}
+                  className="mt-3 px-4 py-1 bg-blue-600 text-white rounded text-sm"
+                >
+                  Mark as Confirmed
+                </button>
+              )}
+
+              {donation.status === "Confirmed" && (
+                <button
+                  onClick={() => {
+                    const donationRef = ref(db, `donations/${donation.id}`);
+
+                    update(donationRef, {
+                      status: "Completed"
+                    });
+                  }}
+                  className="mt-3 px-4 py-1 bg-green-600 text-white rounded text-sm"
+                >
+                  Mark as Completed
+                </button>
+              )}
+
+            </div>
+
+          ))}
 
         </div>
-    );
+      )}
+
+    </DashboardLayout>
+
+  );
 }
