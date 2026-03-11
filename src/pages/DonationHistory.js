@@ -1,191 +1,214 @@
 import { ref, onValue, update } from "firebase/database";
-import { db } from "../firebase";
+import { db, auth } from "../firebase";
 import { useEffect, useState } from "react";
+import DashboardLayout from "../components/DashboardLayout";
+import { useNavigate } from "react-router-dom";
 
 export default function DonationHistory({ donations, setDonations }) {
 
-    const [selectedDonation, setSelectedDonation] = useState(null);
+  const navigate = useNavigate();
+  const [selectedDonation, setSelectedDonation] = useState(null);
 
-    useEffect(() => {
-        const donationRef = ref(db, "donations");
+  useEffect(() => {
 
-        onValue(donationRef, (snapshot) => {
-            const data = snapshot.val();
+    const user = auth.currentUser;
 
-            if (data) {
-                const donationList = Object.keys(data).map((key) => ({
-                    id: key,
-                    ...data[key]
-                }));
+    // Redirect if not logged in
+    if (!user) {
+      navigate("/login");
+      return;
+    }
 
-                setDonations(donationList);
-            } else {
-                setDonations([]);
-            }
-        });
+    const donationRef = ref(db, "donations");
 
-    }, [setDonations]);
+    onValue(donationRef, (snapshot) => {
 
-    return (
-        <div className="min-h-screen bg-gray-100 p-8">
+      const data = snapshot.val();
 
-            <h1 className="text-3xl font-bold mb-6">
-                Donation History
-            </h1>
+      if (data) {
 
-            {donations.length === 0 ? (
-                <p className="text-gray-500">No donations yet.</p>
-            ) : (
+        const donationList = Object.keys(data)
+          .map((key) => ({
+            id: key,
+            ...data[key]
+          }))
+          // Show only logged-in user's donations
+          .filter((donation) => donation.userId === user.uid);
 
-                <div className="bg-white rounded-xl shadow-md p-6 space-y-4">
+        setDonations(donationList);
 
-                    {donations.map((donation) => (
+      } else {
+        setDonations([]);
+      }
 
-                        <div
-                            key={donation.id}
-                            className="flex items-center justify-between border rounded-lg p-4 hover:bg-gray-50 transition"
-                        >
+    });
 
-                            {/* LEFT SIDE */}
-                            <div className="flex items-center gap-4 w-full">
+  }, [setDonations, navigate]);
 
-                                <div className="w-12 h-12 bg-gray-200 rounded-md"></div>
+  return (
 
-                                <div className="flex-1">
+    <DashboardLayout>
 
-                                    <p className="text-xs text-gray-400">
-                                        ID: {donation.id}
-                                    </p>
+      <h1 className="text-3xl font-bold mb-6 text-[#00563B]">
+        Donation History
+      </h1>
 
-                                    <h3 className="font-semibold text-lg">
-                                        {donation.itemName}
-                                    </h3>
+      {donations.length === 0 ? (
+        <p className="text-gray-500">No donations yet.</p>
+      ) : (
 
-                                    <p className="text-sm text-gray-500">
-                                        {donation.institution}
-                                    </p>
+        <div className="bg-white rounded-xl shadow-md p-6 space-y-4">
 
-                                    <p className="text-sm text-gray-600">
-                                        Qty: {donation.quantity} | {donation.date}
-                                    </p>
+          {donations.map((donation) => (
 
-                                </div>
+            <div
+              key={donation.id}
+              className="flex items-center justify-between border rounded-lg p-4 hover:bg-gray-50 transition"
+            >
 
-                            </div>
+              {/* LEFT SIDE */}
+              <div className="flex items-center gap-4 w-full">
 
-                            {/* RIGHT SIDE */}
-                            <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gray-200 rounded-md"></div>
 
-                                <span
-                                    className={`px-3 py-1 rounded-full text-sm ${donation.status === "Pending"
-                                            ? "bg-yellow-100 text-yellow-700"
-                                            : donation.status === "Confirmed"
-                                                ? "bg-blue-100 text-blue-700"
-                                                : "bg-green-100 text-green-700"
-                                        }`}
-                                >
-                                    {donation.status}
-                                </span>
+                <div className="flex-1">
 
-                                {donation.status === "Pending" && (
-                                    <button
-                                        onClick={() => {
-                                            const donationRef = ref(db, `donations/${donation.id}`);
+                  <p className="text-xs text-gray-400">
+                    ID: {donation.id}
+                  </p>
 
-                                            update(donationRef, {
-                                                status: "Confirmed"
-                                            });
-                                        }}
-                                        className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-                                    >
-                                        Confirm
-                                    </button>
-                                )}
+                  <h3 className="font-semibold text-lg">
+                    {donation.itemName}
+                  </h3>
 
-                                {donation.status === "Confirmed" && (
-                                    <button
-                                        onClick={() => {
-                                            const donationRef = ref(db, `donations/${donation.id}`);
+                  <p className="text-sm text-gray-500">
+                    {donation.institution}
+                  </p>
 
-                                            update(donationRef, {
-                                                status: "Completed"
-                                            });
-                                        }}
-                                        className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-                                    >
-                                        Complete
-                                    </button>
-                                )}
-
-                                <button
-                                    onClick={() => setSelectedDonation(donation)}
-                                    className="px-3 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
-                                >
-                                    View
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                    ))}
+                  <p className="text-sm text-gray-600">
+                    Qty: {donation.quantity} | {donation.date}
+                  </p>
 
                 </div>
 
-            )}
+              </div>
 
-            {/* VIEW DETAILS MODAL */}
+              {/* RIGHT SIDE */}
+              <div className="flex items-center gap-3">
 
-            {selectedDonation && (
+                <span
+                  className={`px-3 py-1 rounded-full text-sm ${
+                    donation.status === "Pending"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : donation.status === "Confirmed"
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-green-100 text-green-700"
+                  }`}
+                >
+                  {donation.status}
+                </span>
 
-                <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                {donation.status === "Pending" && (
+                  <button
+                    onClick={() => {
+                      const donationRef = ref(db, `donations/${donation.id}`);
 
-                    <div className="bg-white p-6 rounded-lg w-96">
+                      update(donationRef, {
+                        status: "Confirmed"
+                      });
+                    }}
+                    className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                  >
+                    Confirm
+                  </button>
+                )}
 
-                        <h2 className="text-xl font-bold mb-4">
-                            Donation Details
-                        </h2>
+                {donation.status === "Confirmed" && (
+                  <button
+                    onClick={() => {
+                      const donationRef = ref(db, `donations/${donation.id}`);
 
-                        <p className="text-sm text-gray-500 mb-1">
-                            ID: {selectedDonation.id}
-                        </p>
+                      update(donationRef, {
+                        status: "Completed"
+                      });
+                    }}
+                    className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                  >
+                    Complete
+                  </button>
+                )}
 
-                        <p><strong>Item:</strong> {selectedDonation.itemName}</p>
-                        <p><strong>Institution:</strong> {selectedDonation.institution}</p>
-                        <p><strong>Quantity:</strong> {selectedDonation.quantity}</p>
-                        <p><strong>Date:</strong> {selectedDonation.date}</p>
+                <button
+                  onClick={() => setSelectedDonation(donation)}
+                  className="px-3 py-1 bg-gray-200 rounded text-sm hover:bg-gray-300"
+                >
+                  View
+                </button>
 
-                        <div className="mt-2">
-                            <strong>Status:</strong>{" "}
-                            <span
-                                className={`px-3 py-1 rounded-full text-sm ${selectedDonation.status === "Pending"
-                                        ? "bg-yellow-100 text-yellow-700"
-                                        : selectedDonation.status === "Confirmed"
-                                            ? "bg-blue-100 text-blue-700"
-                                            : "bg-green-100 text-green-700"
-                                    }`}
-                            >
-                                {selectedDonation.status}
-                            </span>
-                        </div>
+              </div>
 
-                        <div className="flex justify-end mt-4">
+            </div>
 
-                            <button
-                                onClick={() => setSelectedDonation(null)}
-                                className="px-4 py-2 bg-gray-300 rounded"
-                            >
-                                Close
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            )}
+          ))}
 
         </div>
-    );
+
+      )}
+
+      {/* VIEW DETAILS MODAL */}
+
+      {selectedDonation && (
+
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+
+          <div className="bg-white p-6 rounded-lg w-96">
+
+            <h2 className="text-xl font-bold mb-4">
+              Donation Details
+            </h2>
+
+            <p className="text-sm text-gray-500 mb-1">
+              ID: {selectedDonation.id}
+            </p>
+
+            <p><strong>Item:</strong> {selectedDonation.itemName}</p>
+            <p><strong>Institution:</strong> {selectedDonation.institution}</p>
+            <p><strong>Quantity:</strong> {selectedDonation.quantity}</p>
+            <p><strong>Date:</strong> {selectedDonation.date}</p>
+
+            <div className="mt-2">
+              <strong>Status:</strong>{" "}
+              <span
+                className={`px-3 py-1 rounded-full text-sm ${
+                  selectedDonation.status === "Pending"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : selectedDonation.status === "Confirmed"
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-green-100 text-green-700"
+                }`}
+              >
+                {selectedDonation.status}
+              </span>
+            </div>
+
+            <div className="flex justify-end mt-4">
+
+              <button
+                onClick={() => setSelectedDonation(null)}
+                className="px-4 py-2 bg-gray-300 rounded"
+              >
+                Close
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
+    </DashboardLayout>
+
+  );
 }
