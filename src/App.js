@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import { Toaster } from "react-hot-toast";
+import Profile from "./pages/Profile";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 /* Main Pages */
 import Landing from "./pages/Landing";
@@ -32,63 +34,118 @@ function App() {
   const [donations, setDonations] = useState([]);
 
   return (
-    <Router>
-      <Toaster position="top-right" />
-
-      <Routes>
-
-        {/* MAIN PAGES */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
-        {/* DASHBOARD */}
-        <Route path="/dashboard" element={<DashboardHome />} />
-
-        <Route path="/institution" element={<InstitutionDashboard />} />
-
-        <Route
-          path="/browse"
-          element={
-            <BrowseNeeds
-              donations={donations}
-              setDonations={setDonations}
-            />
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#ffffff",
+            color: "#333",
+            borderRadius: "8px",
+            padding: "10px 14px"
           }
-        />
+        }}
+      />
 
-        <Route
-          path="/donation-history"
-          element={
-            <DonationHistory
-              donations={donations}
-              setDonations={setDonations}
-            />
-          }
-        />
+      <Router>
 
-        {/* VOLUNTEER MODULE */}
-        <Route path="/volunteer" element={<VolunteerLayout />}>
-          <Route index element={<Navigate to="dashboard" />} />
-          <Route path="dashboard" element={<VolunteerDashboard />} />
-          <Route path="register" element={<VolunteerRegister />} />
-          <Route path="tasks" element={<VolunteerTasks />} />
-          <Route path="mytasks" element={<VolunteerMyTasks />} />
-          <Route path="schedule" element={<VolunteerSchedule />} />
-        </Route>
+        <Routes>
 
-        {/* COMPANION MODULE */}
-        <Route path="/companion" element={<CompanionLayout />}>
-          <Route index element={<Navigate to="dashboard" />} />
-          <Route path="dashboard" element={<CompanionDashboard />} />
-          <Route path="new" element={<NewRequest />} />
-          <Route path="active" element={<ActiveRequests />} />
-          <Route path="history" element={<CompanionHistory />} />
-          <Route path="volunteers" element={<CompanionVolunteers />} />
-        </Route>
+          {/* PUBLIC */}
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-      </Routes>
-    </Router>
+          {/* PROTECTED ROUTES */}
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardHome />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/institution"
+            element={
+              <ProtectedRoute>
+                <InstitutionDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/browse"
+            element={
+              <BrowseNeeds
+                donations={donations}
+                setDonations={setDonations}
+              />
+            }
+          />
+
+          <Route
+            path="/donation-history"
+            element={
+              <ProtectedRoute>
+                <DonationHistory
+                  donations={donations}
+                  setDonations={setDonations}
+                />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* VOLUNTEER */}
+          <Route
+            path="/volunteer"
+            element={
+              <ProtectedRoute>
+                <VolunteerLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="dashboard" />} />
+            <Route path="dashboard" element={<VolunteerDashboard />} />
+            <Route path="register" element={<VolunteerRegister />} />
+            <Route path="tasks" element={<VolunteerTasks />} />
+            <Route path="mytasks" element={<VolunteerMyTasks />} />
+            <Route path="schedule" element={<VolunteerSchedule />} />
+          </Route>
+
+          {/* COMPANION */}
+          <Route
+            path="/companion"
+            element={
+              <ProtectedRoute>
+                <CompanionLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="dashboard" />} />
+            <Route path="dashboard" element={<CompanionDashboard />} />
+            <Route path="new" element={<NewRequest />} />
+            <Route path="active" element={<ActiveRequests />} />
+            <Route path="history" element={<CompanionHistory />} />
+            <Route path="volunteers" element={<CompanionVolunteers />} />
+          </Route>
+
+        </Routes>
+
+      </Router>
+    </>
   );
 }
 

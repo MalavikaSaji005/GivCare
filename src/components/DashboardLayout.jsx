@@ -63,8 +63,13 @@ export default function DashboardLayout({ children }) {
                 📊 Donation History
               </NavLink>
 
-              <NavLink to="/profile" style={linkStyle}>
-                👤 Profile
+              {/* ✅ NEW MODULE LINKS */}
+              <NavLink to="/volunteer/dashboard" style={linkStyle}>
+                🤝 Volunteers
+              </NavLink>
+
+              <NavLink to="/companion/dashboard" style={linkStyle}>
+                ❤️ Companions
               </NavLink>
 
             </div>

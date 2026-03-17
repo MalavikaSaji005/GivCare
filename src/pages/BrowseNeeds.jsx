@@ -21,7 +21,22 @@ export default function BrowseNeeds() {
   const [donationQty, setDonationQty] = useState("");
   const [error, setError] = useState("");
 
-  // Fetch needs from Firebase
+  // 🔥 HANDLE DONATE CLICK (LOGIN CHECK)
+  const handleDonateClick = (need) => {
+    const user = auth.currentUser;
+
+    if (!user) {
+      toast.error("Please login to donate");
+      navigate("/login");
+      return;
+    }
+
+    setSelectedNeed(need);
+    setDonationQty("");
+    setError("");
+  };
+
+  // Fetch needs
   useEffect(() => {
 
     const needsRef = ref(db, "needs");
@@ -59,7 +74,7 @@ export default function BrowseNeeds() {
 
   }, []);
 
-  // Filtering
+  // Filter
   const filteredNeeds = needs.filter((need) => {
 
     const matchesLocation =
@@ -185,7 +200,6 @@ export default function BrowseNeeds() {
                   Remaining: {remaining}
                 </p>
 
-                {/* PROGRESS BAR */}
                 <div className="w-full bg-gray-200 h-2 rounded mt-2">
                   <div
                     className="bg-green-500 h-2 rounded"
@@ -197,20 +211,7 @@ export default function BrowseNeeds() {
 
               <button
                 disabled={isClosed}
-                onClick={() => {
-                  const user = auth.currentUser;
-
-                  if (!user) {
-                    if (window.confirm("You must login to donate. Go to login page?")) {
-                      navigate("/login");
-                    }
-                    return;
-                  }
-
-                  setSelectedNeed(need);
-                  setDonationQty("");
-                  setError("");
-                }}
+                onClick={() => handleDonateClick(need)}
                 className={`px-4 py-2 rounded text-white
                 ${isClosed ? "bg-gray-400" : "bg-[#00563B] hover:bg-[#00442E]"}`}
               >
@@ -225,7 +226,7 @@ export default function BrowseNeeds() {
 
       </div>
 
-      {/* DONATION MODAL */}
+      {/* MODAL */}
       {selectedNeed && (
 
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
@@ -264,22 +265,29 @@ export default function BrowseNeeds() {
                   if (loading) return;
                   setLoading(true);
 
+                  const user = auth.currentUser;
+
+                  if (!user) {
+                    toast.error("Session expired. Please login again.");
+                    navigate("/login");
+                    setLoading(false);
+                    return;
+                  }
+
                   const remaining =
                     selectedNeed.quantityRequired - selectedNeed.quantityFulfilled;
 
                   if (donationQty <= 0) {
-                    toast.error("Enter a valid quantity");
+                    toast.error("Enter valid quantity");
                     setLoading(false);
                     return;
                   }
 
                   if (donationQty > remaining) {
-                    toast.error("Cannot donate more than remaining quantity");
+                    toast.error("Cannot exceed remaining quantity");
                     setLoading(false);
                     return;
                   }
-
-                  const user = auth.currentUser;
 
                   const newDonation = {
                     userId: user.uid,

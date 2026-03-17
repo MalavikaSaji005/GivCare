@@ -22,7 +22,7 @@ export default function Navbar({ toggleSidebar }) {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigate("/login");
+      navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -44,15 +44,8 @@ export default function Navbar({ toggleSidebar }) {
     >
 
       {/* LEFT SECTION */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "15px"
-        }}
-      >
+      <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
 
-        {/* Hamburger Button */}
         {toggleSidebar && (
           <button
             onClick={toggleSidebar}
@@ -68,7 +61,6 @@ export default function Navbar({ toggleSidebar }) {
           </button>
         )}
 
-        {/* Logo + Title */}
         <Link
           to="/"
           style={{
@@ -102,15 +94,8 @@ export default function Navbar({ toggleSidebar }) {
 
       </div>
 
-      {/* RIGHT NAVIGATION */}
-      <div
-        style={{
-          display: "flex",
-          gap: "25px",
-          alignItems: "center",
-          position: "relative"
-        }}
-      >
+      {/* RIGHT NAV */}
+      <div style={{ display: "flex", gap: "25px", alignItems: "center", position: "relative" }}>
 
         <Link to="/" style={{ textDecoration: "none", color: "#333" }}>
           Home
@@ -121,19 +106,17 @@ export default function Navbar({ toggleSidebar }) {
         </Link>
 
         {user && (
-          <Link
-            to="/donation-history"
-            style={{ textDecoration: "none", color: "#333" }}
-          >
+          <Link to="/donation-history" style={{ textDecoration: "none", color: "#333" }}>
             Donations
           </Link>
         )}
 
-        {/* USER PROFILE */}
+        {/* USER */}
         {user ? (
 
           <div style={{ position: "relative" }}>
 
+            {/* Avatar */}
             <div
               onClick={() => setMenuOpen(!menuOpen)}
               style={{
@@ -152,7 +135,7 @@ export default function Navbar({ toggleSidebar }) {
               {avatarLetter}
             </div>
 
-            {/* DROPDOWN MENU */}
+            {/* DROPDOWN */}
             {menuOpen && (
               <div
                 style={{
@@ -163,22 +146,39 @@ export default function Navbar({ toggleSidebar }) {
                   border: "1px solid #ddd",
                   borderRadius: "8px",
                   boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                  width: "160px"
+                  width: "170px"
                 }}
               >
 
-                <Link
-                  to="/donation-history"
+                {/* ✅ NEW PROFILE */}
+                <div
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate("/profile");
+                  }}
                   style={{
-                    display: "block",
                     padding: "10px",
-                    textDecoration: "none",
-                    color: "#333"
+                    cursor: "pointer"
                   }}
                 >
-                  My Donations
-                </Link>
+                  👤 Profile
+                </div>
 
+                {/* Donations */}
+                <div
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate("/donation-history");
+                  }}
+                  style={{
+                    padding: "10px",
+                    cursor: "pointer"
+                  }}
+                >
+                  📊 My Donations
+                </div>
+
+                {/* Logout */}
                 <button
                   onClick={handleLogout}
                   style={{
@@ -187,13 +187,10 @@ export default function Navbar({ toggleSidebar }) {
                     border: "none",
                     background: "none",
                     cursor: "pointer",
-                    textAlign: "left",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px" 
+                    textAlign: "left"
                   }}
                 >
-                  Logout   ➜]
+                   ➜]  Logout 
                 </button>
 
               </div>
