@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ref, push, onValue, update } from "firebase/database";
+import { ref, push, onValue } from "firebase/database";
 import { db, auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
@@ -21,7 +21,6 @@ export default function BrowseNeeds() {
   const [donationQty, setDonationQty] = useState("");
   const [error, setError] = useState("");
 
-  // 🔥 HANDLE DONATE CLICK (LOGIN CHECK)
   const handleDonateClick = (need) => {
     const user = auth.currentUser;
 
@@ -57,6 +56,7 @@ export default function BrowseNeeds() {
             quantityRequired: parseInt(need.qty),
             quantityFulfilled: parseInt(need.donated || 0),
             institution: need.institutionName || "Institution",
+            institutionId: need.institutionId || "",
             priority: need.priority ? need.priority.toLowerCase() : "normal",
             location: "kochi",
             category: "food"
@@ -289,8 +289,13 @@ export default function BrowseNeeds() {
                     return;
                   }
 
+                  // ✅ Only save the donation record with status "Pending"
+                  // ✅ NO update to 'donated' count — institution confirms first
                   const newDonation = {
                     userId: user.uid,
+                    donorName: user.displayName || user.email || "Anonymous",
+                    institutionId: selectedNeed.institutionId,
+                    needId: selectedNeed.id,
                     institution: selectedNeed.institution,
                     itemName: selectedNeed.itemName,
                     quantity: Number(donationQty),
@@ -300,11 +305,10 @@ export default function BrowseNeeds() {
 
                   await push(ref(db, "donations"), newDonation);
 
-                  await update(ref(db, `needs/${selectedNeed.id}`), {
-                    donated: selectedNeed.quantityFulfilled + Number(donationQty)
-                  });
+                  // ✅ REMOVED the update() that was updating donated count immediately
+                  // Donated count will only update when institution clicks "Mark as Received"
 
-                  toast.success("Donation submitted successfully!");
+                  toast.success("Donation submitted! Waiting for institution to confirm.");
 
                   setSelectedNeed(null);
                   setLoading(false);
