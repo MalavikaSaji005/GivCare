@@ -16,6 +16,7 @@ const InstitutionDashboard = () => {
   const [formData, setFormData] = useState({
     item: '',
     qty: '',
+    category: 'food',
     priority: 'Normal',
     expiry: '',
     status: 'Pending'
@@ -101,6 +102,7 @@ const InstitutionDashboard = () => {
       } else {
         await push(ref(db, 'needs'), {
           ...formData,
+          category: formData.category,
           institutionId: user?.uid || "anonymous",   // ✅ This is what BrowseNeeds reads
           institutionName: user?.displayName || "Institution",
           donated: 0,
@@ -116,14 +118,14 @@ const InstitutionDashboard = () => {
 
   const openEditModal = (need) => {
     setEditId(need.id);
-    setFormData({ item: need.item, qty: need.qty, priority: need.priority || 'Normal', expiry: need.expiry || '', status: need.status || 'Pending' });
+    setFormData({ item: need.item, qty: need.qty, category: need.category || 'food', priority: need.priority || 'Normal', expiry: need.expiry || '', status: need.status || 'Pending' });
     setShowModal(true);
   };
 
   const closeModal = () => {
     setShowModal(false);
     setEditId(null);
-    setFormData({ item: '', qty: '', priority: 'Normal', expiry: '', status: 'Pending' });
+    setFormData({ item: '', qty: '', category: 'food', priority: 'Normal', expiry: '', status: 'Pending' });
   };
 
   return (
@@ -270,6 +272,11 @@ const InstitutionDashboard = () => {
                   type="number" placeholder="Quantity" className="w-full p-3 border rounded-xl"
                   value={formData.qty} onChange={(e) => setFormData({ ...formData, qty: e.target.value })} required
                 />
+                <select className="w-full p-3 border rounded-xl" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
+                  <option value="food">Food</option>
+                  <option value="education">Education</option>
+                  <option value="clothing">Clothing</option>
+                </select>
                 <select className="w-full p-3 border rounded-xl" value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: e.target.value })}>
                   <option value="Normal">Normal</option>
                   <option value="Urgent">Urgent</option>

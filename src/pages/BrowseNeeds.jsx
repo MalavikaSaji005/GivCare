@@ -64,7 +64,7 @@ export default function BrowseNeeds() {
             institutionId: need.institutionId || "",
             priority: need.priority ? need.priority.toLowerCase() : "normal",
             location: "kochi",
-            category: "food"
+            category: need.category ? need.category.toLowerCase() : "food"
           };
 
         });
@@ -121,8 +121,8 @@ export default function BrowseNeeds() {
       need.institution.toLowerCase().includes(search.toLowerCase());
 
     const matchesCategory =
-      category === "all" || need.category === category;
-
+      category === "all" ||
+      need.category?.trim().toLowerCase() === category.toLowerCase();
     const matchesPriority =
       priority === "all" || need.priority === priority;
 
@@ -350,7 +350,21 @@ export default function BrowseNeeds() {
                     setLoading(false);
                     return;
                   }
+                  const formatDateTime = (value) => {
+                    const date = new Date(value);
 
+                    const day = String(date.getDate()).padStart(2, "0");
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const year = date.getFullYear();
+
+                    let hours = date.getHours();
+                    const minutes = String(date.getMinutes()).padStart(2, "0");
+
+                    const ampm = hours >= 12 ? "PM" : "AM";
+                    hours = hours % 12 || 12;
+
+                    return `${day}-${month}-${year} ${hours}:${minutes} ${ampm}`;
+                  };
                   // ✅ Only save the donation record with status "Pending"
                   // ✅ NO update to 'donated' count — institution confirms first
                   const newDonation = {
@@ -366,7 +380,7 @@ export default function BrowseNeeds() {
                     date: new Date().toISOString(),
                     status: "Pending",
                     isRead: false,
-                    donationDateTime: donationDateTime || new Date().toISOString(),
+                    donationDateTime: formatDateTime(donationDateTime || new Date()),
                   };
 
                   await push(ref(db, "donations"), newDonation);
