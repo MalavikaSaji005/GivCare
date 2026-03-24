@@ -16,11 +16,16 @@ export default function BrowseNeeds() {
   const [category, setCategory] = useState("all");
   const [priority, setPriority] = useState("all");
   const [location, setLocation] = useState("all");
+  const [autoLocation, setAutoLocation] = useState("");
 
   const [selectedNeed, setSelectedNeed] = useState(null);
   const [donationQty, setDonationQty] = useState("");
   const [error, setError] = useState("");
 
+  const [donorName, setDonorName] = useState("");
+  const [donorLocation, setDonorLocation] = useState("");
+  const [remark, setRemark] = useState("");
+  const [donationDateTime, setDonationDateTime] = useState("");
   const handleDonateClick = (need) => {
     const user = auth.currentUser;
 
@@ -73,7 +78,38 @@ export default function BrowseNeeds() {
     });
 
   }, []);
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
 
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+          );
+
+          const data = await response.json();
+
+          const city =
+            data.address.city ||
+            data.address.town ||
+            data.address.village ||
+            "";
+
+          const state = data.address.state || "";
+
+          const place = `${city}, ${state}`;
+
+          setAutoLocation(place);
+
+        } catch (error) {
+          console.log("Location fetch failed:", error);
+          setAutoLocation("Location unavailable");
+        }
+      });
+    }
+  }, []);
   // Filter
   const filteredNeeds = needs.filter((need) => {
 
@@ -244,7 +280,33 @@ export default function BrowseNeeds() {
               onChange={(e) => setDonationQty(e.target.value)}
               className="w-full p-2 border rounded mb-3"
             />
+            <input
+              type="text"
+              placeholder="Donor Name"
+              value={donorName}
+              onChange={(e) => setDonorName(e.target.value)}
+              className="w-full p-2 border rounded mb-2"
+            />
 
+            <input
+              type="text"
+              placeholder="Location"
+              value={donorLocation || autoLocation}
+              onChange={(e) => setDonorLocation(e.target.value)}
+              className="w-full p-2 border rounded mb-2"
+            />
+            <input
+              type="datetime-local"
+              value={donationDateTime}
+              onChange={(e) => setDonationDateTime(e.target.value)}
+              className="w-full p-2 border rounded mb-3"
+            />
+            <textarea
+              placeholder="Remark"
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
+              className="w-full p-2 border rounded mb-3"
+            />
             {error && (
               <p className="text-red-500 text-sm mb-2">{error}</p>
             )}
@@ -292,15 +354,19 @@ export default function BrowseNeeds() {
                   // ✅ Only save the donation record with status "Pending"
                   // ✅ NO update to 'donated' count — institution confirms first
                   const newDonation = {
-                    userId: user.uid,
-                    donorName: user.displayName || user.email || "Anonymous",
+                    userId: auth.currentUser.uid,
+                    donorName: donorName || user.displayName || "Anonymous",
+                    donorLocation: donorLocation || autoLocation,
+                    remark: remark,
                     institutionId: selectedNeed.institutionId,
                     needId: selectedNeed.id,
                     institution: selectedNeed.institution,
                     itemName: selectedNeed.itemName,
                     quantity: Number(donationQty),
-                    date: new Date().toLocaleString(),
-                    status: "Pending"
+                    date: new Date().toISOString(),
+                    status: "Pending",
+                    isRead: false,
+                    donationDateTime: donationDateTime || new Date().toISOString(),
                   };
 
                   await push(ref(db, "donations"), newDonation);
@@ -311,6 +377,10 @@ export default function BrowseNeeds() {
                   toast.success("Donation submitted! Waiting for institution to confirm.");
 
                   setSelectedNeed(null);
+                  setDonorName("");
+                  setDonorLocation("");
+                  setRemark("");
+                  setDonationDateTime("");
                   setLoading(false);
 
                   navigate("/donation-history");
