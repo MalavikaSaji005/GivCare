@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db, auth } from '../firebase'; 
+import { db, auth } from '../firebase';
 import { ref, push, onValue, remove, update, get } from "firebase/database";
 import DashboardLayout from "../components/DashboardLayout";
 import toast from "react-hot-toast";
@@ -7,11 +7,12 @@ import toast from "react-hot-toast";
 const InstitutionDashboard = () => {
   // --- STATE VARIABLES ---
   const [needs, setNeeds] = useState([]);
-  const [pendingDonations, setPendingDonations] = useState([]); 
+  const [pendingDonations, setPendingDonations] = useState([]);
+  const [unreadDonations, setUnreadDonations] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
-  
+
   const [formData, setFormData] = useState({
     item: '',
     qty: '',
@@ -46,11 +47,15 @@ const InstitutionDashboard = () => {
       if (data) {
         const list = Object.keys(data)
           .map(key => ({ id: key, ...data[key] }))
-          .filter(d => 
-            d.institutionId === user.uid && 
-            d.status?.toLowerCase() === "pending"
+          .filter(d =>
+            d.institutionId === user.uid &&
+            d.status?.toLowerCase() === "completed"
           );
         setPendingDonations(list);
+
+        // ✅ NEW: filter unread
+        const unread = list.filter(d => !d.isRead);
+        setUnreadDonations(unread);
       } else {
         setPendingDonations([]);
       }
@@ -61,16 +66,17 @@ const InstitutionDashboard = () => {
   const handleConfirmReceipt = async (donation) => {
     try {
       // Step A: Update Donation Status to Confirmed/Received
-      await update(ref(db, `donations/${donation.id}`), { 
+      await update(ref(db, `donations/${donation.id}`), {
         status: "Received",
-        receivedAt: new Date().toISOString()
+        receivedAt: new Date().toISOString(),
+        isRead: true
       });
 
       // Step B: Increment the 'donated' count in the specific Need Inventory
       if (donation.needId) {
         const needRef = ref(db, `needs/${donation.needId}`);
         const needSnapshot = await get(needRef);
-        
+
         if (needSnapshot.exists()) {
           const currentDonated = Number(needSnapshot.val().donated || 0);
           const addedQty = Number(donation.quantity || 0);
@@ -124,15 +130,42 @@ const InstitutionDashboard = () => {
     <DashboardLayout>
       {/* HEADER SECTION */}
       <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-[#00563B]">Institution Dashboard</h1>
-          <p className="text-gray-500 mt-1">Manage and track community needs.</p>
-        </div>
-        <button onClick={() => setShowModal(true)} className="bg-[#00563B] text-white px-6 py-3 rounded-xl font-semibold shadow-md">
-          + Post New Need
-        </button>
-      </div>
 
+        {/* LEFT SIDE */}
+        <div>
+          <h1 className="text-3xl font-bold text-[#00563B]">
+            Institution Dashboard
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Manage and track community needs.
+          </p>
+        </div>
+
+        {/* RIGHT SIDE */}
+        <div className="flex items-center gap-4">
+
+          {/* 🔔 Notification Icon */}
+          <div className="relative text-2xl cursor-pointer">
+            🔔
+
+            {pendingDonations.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 rounded-full">
+                {unreadDonations.length}
+              </span>
+            )}
+          </div>
+
+          {/* Button */}
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-[#00563B] text-white px-6 py-3 rounded-xl font-semibold shadow-md"
+          >
+            + Post New Need
+          </button>
+
+        </div>
+
+      </div>
       {/* STATS CARDS */}
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white p-6 rounded-xl shadow-sm border">
@@ -160,12 +193,13 @@ const InstitutionDashboard = () => {
           </div>
           <div className="grid gap-4">
             {pendingDonations.map((d) => (
-              <div key={d.id} className="flex justify-between items-center bg-blue-50 p-4 rounded-xl border border-blue-100">
+              <div key={d.id} className={`flex justify-between items-center p-4 rounded-xl border border-blue-100 
+  ${d.isRead ? "bg-gray-100 opacity-60" : "bg-blue-50 font-semibold"}`}>
                 <div>
                   <h3 className="font-bold text-gray-800">{d.itemName}</h3>
                   <p className="text-sm text-gray-600">Quantity: <b>{d.quantity}</b> | From: {d.donorName || "Anonymous Donor"}</p>
                 </div>
-                <button 
+                <button
                   onClick={() => handleConfirmReceipt(d)}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-bold transition shadow-sm"
                 >
@@ -175,13 +209,14 @@ const InstitutionDashboard = () => {
             ))}
           </div>
         </div>
-      )}
+      )
+      }
 
       {/* CURRENT NEEDS INVENTORY */}
       <div className="bg-white rounded-xl shadow-sm border p-5">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-[#00563B]">Current Needs Inventory</h2>
-          <input 
+          <input
             type="text" placeholder="Search..." className="border p-2 rounded-lg text-sm"
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -203,9 +238,8 @@ const InstitutionDashboard = () => {
                   <td className="p-4 font-bold uppercase">{need.item}</td>
                   <td className="p-4">{need.qty}</td>
                   <td className="p-4">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
-                      need.priority === 'Urgent' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${need.priority === 'Urgent' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
+                      }`}>
                       {need.priority}
                     </span>
                   </td>
@@ -222,32 +256,34 @@ const InstitutionDashboard = () => {
       </div>
 
       {/* MODAL (POST/EDIT) */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-8 rounded-2xl w-full max-w-md">
-            <h2 className="text-2xl font-bold text-[#00563B] mb-6">{editId ? "Edit Need" : "Post New Need"}</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <input 
-                placeholder="Item Name" className="w-full p-3 border rounded-xl"
-                value={formData.item} onChange={(e) => setFormData({...formData, item: e.target.value})} required 
-              />
-              <input 
-                type="number" placeholder="Quantity" className="w-full p-3 border rounded-xl"
-                value={formData.qty} onChange={(e) => setFormData({...formData, qty: e.target.value})} required 
-              />
-              <select className="w-full p-3 border rounded-xl" value={formData.priority} onChange={(e) => setFormData({...formData, priority: e.target.value})}>
-                <option value="Normal">Normal</option>
-                <option value="Urgent">Urgent</option>
-              </select>
-              <div className="flex gap-4 pt-4">
-                <button type="button" onClick={closeModal} className="flex-1 py-3 bg-gray-100 rounded-xl font-bold">Cancel</button>
-                <button type="submit" className="flex-1 py-3 bg-[#00563B] text-white rounded-xl font-bold">Save</button>
-              </div>
-            </form>
+      {
+        showModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white p-8 rounded-2xl w-full max-w-md">
+              <h2 className="text-2xl font-bold text-[#00563B] mb-6">{editId ? "Edit Need" : "Post New Need"}</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <input
+                  placeholder="Item Name" className="w-full p-3 border rounded-xl"
+                  value={formData.item} onChange={(e) => setFormData({ ...formData, item: e.target.value })} required
+                />
+                <input
+                  type="number" placeholder="Quantity" className="w-full p-3 border rounded-xl"
+                  value={formData.qty} onChange={(e) => setFormData({ ...formData, qty: e.target.value })} required
+                />
+                <select className="w-full p-3 border rounded-xl" value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: e.target.value })}>
+                  <option value="Normal">Normal</option>
+                  <option value="Urgent">Urgent</option>
+                </select>
+                <div className="flex gap-4 pt-4">
+                  <button type="button" onClick={closeModal} className="flex-1 py-3 bg-gray-100 rounded-xl font-bold">Cancel</button>
+                  <button type="submit" className="flex-1 py-3 bg-[#00563B] text-white rounded-xl font-bold">Save</button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
-    </DashboardLayout>
+        )
+      }
+    </DashboardLayout >
   );
 };
 

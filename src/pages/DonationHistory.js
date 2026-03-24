@@ -86,7 +86,8 @@ export default function DonationHistory({ donations, setDonations }) {
                   </p>
 
                   <p className="text-sm text-gray-600">
-                    Qty: {donation.quantity} | {donation.date}
+                    Qty: {donation.quantity} |{" "}
+                    {new Date(donation.date).toLocaleString("en-IN")}
                   </p>
 
                 </div>
@@ -97,13 +98,12 @@ export default function DonationHistory({ donations, setDonations }) {
               <div className="flex items-center gap-3">
 
                 <span
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    donation.status === "Pending"
+                  className={`px-3 py-1 rounded-full text-sm ${donation.status === "Pending"
                       ? "bg-yellow-100 text-yellow-700"
                       : donation.status === "Confirmed"
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-green-100 text-green-700"
-                  }`}
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-green-100 text-green-700"
+                    }`}
                 >
                   {donation.status}
                 </span>
@@ -179,13 +179,12 @@ export default function DonationHistory({ donations, setDonations }) {
             <div className="mt-2">
               <strong>Status:</strong>{" "}
               <span
-                className={`px-3 py-1 rounded-full text-sm ${
-                  selectedDonation.status === "Pending"
+                className={`px-3 py-1 rounded-full text-sm ${selectedDonation.status === "Pending"
                     ? "bg-yellow-100 text-yellow-700"
                     : selectedDonation.status === "Confirmed"
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-green-100 text-green-700"
-                }`}
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-green-100 text-green-700"
+                  }`}
               >
                 {selectedDonation.status}
               </span>
