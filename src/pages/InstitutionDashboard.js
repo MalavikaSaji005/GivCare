@@ -7,7 +7,6 @@ import toast from "react-hot-toast";
 
 const InstitutionDashboard = () => {
 
-  // ✅ Read ?view= from URL — sidebar controls which view is shown
   const [searchParams] = useSearchParams();
   const activeView = searchParams.get("view") === "confirmations" ? "confirmations" : "dashboard";
 
@@ -26,13 +25,18 @@ const InstitutionDashboard = () => {
     status: 'Pending'
   });
 
-  // --- FETCH NEEDS ---
+  // --- FETCH NEEDS — only this institution's needs ---
   useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) return;
+
     const needsRef = ref(db, 'needs');
     onValue(needsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const list = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        const list = Object.keys(data)
+          .map(key => ({ id: key, ...data[key] }))
+          .filter(need => need.institutionId === user.uid); // ✅ only this institution's needs
         setNeeds(list.reverse());
       } else {
         setNeeds([]);
@@ -44,6 +48,7 @@ const InstitutionDashboard = () => {
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) return;
+
     const donationsRef = ref(db, 'donations');
     onValue(donationsRef, (snapshot) => {
       const data = snapshot.val();
