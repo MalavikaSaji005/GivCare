@@ -148,7 +148,7 @@ export default function BrowseNeeds() {
       {/* FILTERS */}
       <div className="bg-white p-6 rounded-xl shadow mb-6">
 
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid md:grid-cols-5 items-center gap-4">
 
           <input
             type="text"
@@ -188,6 +188,15 @@ export default function BrowseNeeds() {
             <option value="urgent">Urgent</option>
             <option value="normal">Normal</option>
           </select>
+
+          <div className="flex items-center justify-end">
+            <div className="flex items-center gap-2 bg-gray-100 border border-gray-200 px-4 py-2 rounded-lg text-sm text-gray-700 shadow-sm">
+              <span className="text-red-500">📍</span>
+              <span className="font-medium">
+                {autoLocation || "Fetching..."}
+              </span>
+            </div>
+          </div>
 
         </div>
 
