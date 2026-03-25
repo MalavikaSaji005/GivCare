@@ -97,19 +97,10 @@ export default function Navbar({ toggleSidebar }) {
       {/* RIGHT NAV */}
       <div style={{ display: "flex", gap: "25px", alignItems: "center", position: "relative" }}>
 
+        {/* ✅ Only Home remains — Browse Needs and Donations removed */}
         <Link to="/" style={{ textDecoration: "none", color: "#333" }}>
           Home
         </Link>
-
-        <Link to="/browse" style={{ textDecoration: "none", color: "#333" }}>
-          Browse Needs
-        </Link>
-
-        {user && (
-          <Link to="/donation-history" style={{ textDecoration: "none", color: "#333" }}>
-            Donations
-          </Link>
-        )}
 
         {/* USER */}
         {user ? (
@@ -150,35 +141,26 @@ export default function Navbar({ toggleSidebar }) {
                 }}
               >
 
-                {/* ✅ NEW PROFILE */}
                 <div
                   onClick={() => {
                     setMenuOpen(false);
                     navigate("/profile");
                   }}
-                  style={{
-                    padding: "10px",
-                    cursor: "pointer"
-                  }}
+                  style={{ padding: "10px", cursor: "pointer" }}
                 >
                   👤 Profile
                 </div>
 
-                {/* Donations */}
                 <div
                   onClick={() => {
                     setMenuOpen(false);
                     navigate("/donation-history");
                   }}
-                  style={{
-                    padding: "10px",
-                    cursor: "pointer"
-                  }}
+                  style={{ padding: "10px", cursor: "pointer" }}
                 >
                   📊 My Donations
                 </div>
 
-                {/* Logout */}
                 <button
                   onClick={handleLogout}
                   style={{
@@ -190,7 +172,7 @@ export default function Navbar({ toggleSidebar }) {
                     textAlign: "left"
                   }}
                 >
-                   ➜]  Logout 
+                  ➜] Logout
                 </button>
 
               </div>
