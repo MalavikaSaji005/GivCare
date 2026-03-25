@@ -18,6 +18,7 @@ export default function DashboardLayout({ children }) {
       const data = snapshot.val();
       if (data) setRole(data.role);
     });
+     
   }, []);
 
   const linkStyle = ({ isActive }) => ({
@@ -28,12 +29,9 @@ export default function DashboardLayout({ children }) {
     borderRadius: "6px"
   });
 
-  // ✅ Custom active check for institution links
-  // "/institution" is active ONLY when there is NO ?view= param
   const institutionDashboardActive =
     location.pathname === "/institution" && !location.search;
 
-  // "/institution?view=confirmations" is active ONLY when ?view=confirmations
   const confirmationsActive =
     location.pathname === "/institution" && location.search === "?view=confirmations";
 
@@ -73,19 +71,11 @@ export default function DashboardLayout({ children }) {
                     🏠 Dashboard Home
                   </NavLink>
 
-                  {/* ✅ Only active when NO ?view param */}
-                  <NavLink
-                    to="/institution"
-                    style={customStyle(institutionDashboardActive)}
-                  >
+                  <NavLink to="/institution" style={customStyle(institutionDashboardActive)}>
                     🏢 Institution Dashboard
                   </NavLink>
 
-                  {/* ✅ Only active when ?view=confirmations */}
-                  <NavLink
-                    to="/institution?view=confirmations"
-                    style={customStyle(confirmationsActive)}
-                  >
+                  <NavLink to="/institution?view=confirmations" style={customStyle(confirmationsActive)}>
                     🔔 Pending Confirmations
                   </NavLink>
 
@@ -95,6 +85,10 @@ export default function DashboardLayout({ children }) {
 
                   <NavLink to="/companion/dashboard" style={linkStyle}>
                     ❤️ Companions
+                  </NavLink>
+
+                  <NavLink to="/profile" style={linkStyle}>
+                    👤 Profile
                   </NavLink>
                 </>
               ) : (
@@ -117,6 +111,10 @@ export default function DashboardLayout({ children }) {
 
                   <NavLink to="/companion/dashboard" style={linkStyle}>
                     ❤️ Companions
+                  </NavLink>
+
+                  <NavLink to="/profile" style={linkStyle}>
+                    👤 Profile
                   </NavLink>
                 </>
               )}
