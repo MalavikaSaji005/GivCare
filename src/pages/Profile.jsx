@@ -11,6 +11,8 @@ export default function Profile() {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isProfileSaved, setIsProfileSaved] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Donor fields
   const [donorForm, setDonorForm] = useState({
@@ -46,6 +48,9 @@ export default function Profile() {
     onValue(userRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
+        if (data.institutionName || data.name) {
+          setIsProfileSaved(true);
+        }
         setRole(data.role || "donor");
 
         if (data.role === "institution") {
@@ -116,7 +121,11 @@ export default function Profile() {
           updatedAt: new Date().toISOString(),
         });
       }
-      toast.success("Profile saved successfully!");
+      toast.success(
+        isProfileSaved ? "Profile updated successfully!" : "Profile saved successfully!"
+      );
+      setIsProfileSaved(true);
+      setIsEditing(false);
     } catch (err) {
       console.error(err);
       toast.error("Failed to save profile.");
@@ -214,6 +223,7 @@ export default function Profile() {
                   placeholder="Enter your full name"
                   value={donorForm.name}
                   onChange={(e) => setDonorForm({ ...donorForm, name: e.target.value })}
+                  disabled={isProfileSaved && !isEditing}
                   style={inputStyle}
                 />
               </div>
@@ -225,6 +235,7 @@ export default function Profile() {
                   placeholder="Enter your phone number"
                   value={donorForm.phone}
                   onChange={(e) => setDonorForm({ ...donorForm, phone: e.target.value })}
+                  disabled={isProfileSaved && !isEditing}
                   style={inputStyle}
                 />
               </div>
@@ -235,6 +246,7 @@ export default function Profile() {
                   placeholder="Enter your address"
                   value={donorForm.address}
                   onChange={(e) => setDonorForm({ ...donorForm, address: e.target.value })}
+                  disabled={isProfileSaved && !isEditing}
                   rows={3}
                   style={{ ...inputStyle, resize: "none", height: "auto" }}
                 />
@@ -247,6 +259,7 @@ export default function Profile() {
                   placeholder="Enter your pincode"
                   value={donorForm.pincode}
                   onChange={(e) => setDonorForm({ ...donorForm, pincode: e.target.value })}
+                  disabled={isProfileSaved && !isEditing}
                   style={inputStyle}
                 />
               </div>
@@ -263,6 +276,7 @@ export default function Profile() {
                   placeholder="Enter institution name"
                   value={institutionForm.institutionName}
                   onChange={(e) => setInstitutionForm({ ...institutionForm, institutionName: e.target.value })}
+                  disabled={isProfileSaved && !isEditing}
                   style={inputStyle}
                 />
               </div>
@@ -274,6 +288,7 @@ export default function Profile() {
                   placeholder="Enter head's full name"
                   value={institutionForm.headName}
                   onChange={(e) => setInstitutionForm({ ...institutionForm, headName: e.target.value })}
+                  disabled={isProfileSaved && !isEditing}
                   style={inputStyle}
                 />
               </div>
@@ -284,6 +299,7 @@ export default function Profile() {
                   placeholder="Enter institution address"
                   value={institutionForm.address}
                   onChange={(e) => setInstitutionForm({ ...institutionForm, address: e.target.value })}
+                  disabled={isProfileSaved && !isEditing}
                   rows={3}
                   style={{ ...inputStyle, resize: "none", height: "auto" }}
                 />
@@ -296,6 +312,7 @@ export default function Profile() {
                   placeholder="Enter pincode"
                   value={institutionForm.pincode}
                   onChange={(e) => setInstitutionForm({ ...institutionForm, pincode: e.target.value })}
+                  disabled={isProfileSaved && !isEditing}
                   style={inputStyle}
                 />
               </div>
@@ -304,7 +321,13 @@ export default function Profile() {
 
           {/* SAVE BUTTON */}
           <button
-            onClick={handleSave}
+            onClick={() => {
+              if (isProfileSaved && !isEditing) {
+                setIsEditing(true);
+              } else {
+                handleSave();
+              }
+            }}
             disabled={saving}
             style={{
               width: "100%",
@@ -318,7 +341,11 @@ export default function Profile() {
               fontSize: "16px"
             }}
           >
-            {saving ? "Saving..." : "Save Profile"}
+            {saving
+              ? "Saving..."
+              : isProfileSaved
+                ? (isEditing ? "Save Changes" : "Edit Profile")
+                : "Save Profile"}
           </button>
 
         </div>

@@ -15,6 +15,7 @@ const InstitutionDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     item: '',
@@ -93,6 +94,21 @@ const InstitutionDashboard = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const user = auth.currentUser;
+    if (!user?.uid) {
+      toast.error("Please login before posting a need");
+      return;
+    }
+
+    const userSnap = await get(ref(db, `users/${user.uid}`));
+
+    if (!userSnap.exists() || !userSnap.val().institutionName) {
+      toast.error("Please setup your profile before posting a need");
+      setSaving(false);
+      return;
+    }
+
+    const institutionName = userSnap.val().institutionName;
+
     try {
       if (editId) {
         await update(ref(db, `needs/${editId}`), formData);
@@ -101,7 +117,7 @@ const InstitutionDashboard = () => {
         await push(ref(db, 'needs'), {
           ...formData,
           institutionId: user?.uid || "anonymous",
-          institutionName: user?.displayName || "Institution",
+          institutionName: institutionName,
           donated: 0,
           createdAt: new Date().toISOString()
         });
@@ -198,9 +214,8 @@ const InstitutionDashboard = () => {
                         <td className="p-4 font-bold uppercase">{need.item}</td>
                         <td className="p-4">{need.qty}</td>
                         <td className="p-4">
-                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
-                            need.priority === 'Urgent' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
-                          }`}>
+                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${need.priority === 'Urgent' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
+                            }`}>
                             {need.priority}
                           </span>
                         </td>
