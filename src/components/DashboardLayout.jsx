@@ -1,3 +1,4 @@
+
 import { NavLink } from "react-router-dom";
 import Navbar from "./Navbar";
 import { useState } from "react";
@@ -61,6 +62,10 @@ export default function DashboardLayout({ children }) {
 
               <NavLink to="/donation-history" style={linkStyle}>
                 📊 Donation History
+              </NavLink>
+
+              <NavLink to="/profile" style={linkStyle}>
+                👤 Profile
               </NavLink>
 
               {/* ✅ NEW MODULE LINKS */}

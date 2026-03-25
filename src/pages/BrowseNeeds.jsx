@@ -15,7 +15,7 @@ export default function BrowseNeeds() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [priority, setPriority] = useState("all");
-  const [location, setLocation] = useState("all");
+  //const [location, setLocation] = useState("all");
   const [autoLocation, setAutoLocation] = useState("");
 
   const [selectedNeed, setSelectedNeed] = useState(null);
@@ -113,8 +113,8 @@ export default function BrowseNeeds() {
   // Filter
   const filteredNeeds = needs.filter((need) => {
 
-    const matchesLocation =
-      location === "all" || need.location.toLowerCase() === location;
+    // 'const matchesLocation =
+    //   location === "all" || need.location.toLowerCase() === location;'
 
     const matchesSearch =
       need.itemName.toLowerCase().includes(search.toLowerCase()) ||
@@ -126,7 +126,7 @@ export default function BrowseNeeds() {
     const matchesPriority =
       priority === "all" || need.priority === priority;
 
-    return matchesSearch && matchesCategory && matchesPriority && matchesLocation;
+    return matchesSearch && matchesCategory && matchesPriority;
 
   });
 
@@ -169,7 +169,7 @@ export default function BrowseNeeds() {
             <option value="clothing">Clothing</option>
           </select>
 
-          <select
+          {/* <select
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             className="p-3 border rounded-lg"
@@ -177,7 +177,7 @@ export default function BrowseNeeds() {
             <option value="all">All Locations</option>
             <option value="kochi">Kochi</option>
             <option value="trivandrum">Trivandrum</option>
-          </select>
+          </select> */}
 
           <select
             value={priority}
