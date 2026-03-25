@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 export default function Profile() {
 
   const user = auth.currentUser;
-
+  const [donationCount, setDonationCount] = useState(0);
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -27,6 +27,16 @@ export default function Profile() {
     address: "",
     pincode: "",
   });
+
+  const hoverIn = (e) => {
+    e.currentTarget.style.transform = "translateY(-4px)";
+    e.currentTarget.style.boxShadow = "0 8px 18px rgba(0,0,0,0.12)";
+  };
+
+  const hoverOut = (e) => {
+    e.currentTarget.style.transform = "translateY(0)";
+    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
+  };
 
   // Fetch role and existing profile data from Firebase
   useEffect(() => {
@@ -58,8 +68,24 @@ export default function Profile() {
       }
       setLoading(false);
     });
-  }, []);
+  }, [user]);
+  useEffect(() => {
+    const donationsRef = ref(db, "donations");
 
+    onValue(donationsRef, (snapshot) => {
+      const data = snapshot.val();
+
+      if (data) {
+        const myDonations = Object.values(data).filter(
+          (d) => d.userId === user?.uid
+        );
+
+        setDonationCount(myDonations.length);
+      } else {
+        setDonationCount(0);
+      }
+    });
+  }, [user]);
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
@@ -299,6 +325,38 @@ export default function Profile() {
 
       </div>
 
+      {/* ── STATS SECTION ── */}
+      <div style={{
+        marginTop: "30px",
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+        gap: "15px"
+      }}>
+
+        <div style={statCard} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+          <p style={{ color: "#666", marginBottom: "10px" }}>
+            📦 Total Donations
+          </p>
+          <h2>{donationCount}</h2>
+        </div>
+
+        <div style={statCard} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+          <p style={{ color: "#666", marginBottom: "10px" }}>
+            🤝 Active Volunteers
+          </p>
+          <h2>1</h2>
+        </div>
+
+        <div style={statCard} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+          <p style={{ color: "#666", marginBottom: "10px" }}>
+            🏢 Partner Institutions
+          </p>
+          <h2>3</h2>
+        </div>
+
+      </div>
+
+
     </DashboardLayout>
   );
 }
@@ -319,4 +377,14 @@ const inputStyle = {
   borderRadius: "6px",
   fontSize: "14px",
   boxSizing: "border-box"
+};
+
+const statCard = {
+  background: "white",
+  padding: "25px",
+  borderRadius: "12px",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+  transition: "transform 0.2s ease, box-shadow 0.2s ease",
+  cursor: "pointer",
+  textAlign: "center"
 };
