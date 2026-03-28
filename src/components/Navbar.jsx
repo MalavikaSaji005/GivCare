@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import logo from "../assets/logo.jpeg";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function Navbar({ toggleSidebar }) {
 
@@ -11,12 +11,24 @@ export default function Navbar({ toggleSidebar }) {
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const menuRef = useRef();
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
     });
-
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLogout = async () => {
@@ -31,171 +43,111 @@ export default function Navbar({ toggleSidebar }) {
   const avatarLetter = user?.email?.charAt(0).toUpperCase();
 
   return (
-    <nav
-      style={{
-        height: "70px",
-        background: "white",
-        borderBottom: "1px solid #e5e7eb",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 50px"
-      }}
-    >
+    <nav className="w-full bg-white px-12 py-5 flex items-center justify-between shadow-sm">
 
-      {/* LEFT SECTION */}
-      <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+      {/* LEFT */}
+      <div className="flex items-center gap-4">
 
         {toggleSidebar && (
           <button
             onClick={toggleSidebar}
-            style={{
-              fontSize: "26px",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "#00563B"
-            }}
+            className="text-2xl text-primary hover:opacity-70 transition duration-200"
           >
             ☰
           </button>
         )}
 
-        <Link
-          to="/"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            textDecoration: "none"
-          }}
-        >
+        <Link to="/" className="flex items-center gap-2">
           <img
             src={logo}
-            alt="GivCare Logo"
-            style={{
-              width: "45px",
-              height: "45px",
-              objectFit: "contain"
-            }}
+            alt="logo"
+            className="w-10 h-10 object-contain"
           />
-
-          <h2
-            style={{
-              color: "#00563B",
-              margin: 0,
-              fontSize: "28px",
-              fontWeight: "bold"
-            }}
-          >
+          <h2 className="text-2xl font-bold text-primary tracking-tight">
             GivCare
           </h2>
         </Link>
+      </div>
+
+      {/* CENTER NAV */}
+      <div className="hidden md:flex items-center gap-10 text-sm font-medium text-gray-600">
+
+        <button
+          onClick={() => window.scrollTo({ top: 600, behavior: "smooth" })}
+          className="cursor-pointer hover:text-primary transition duration-200"
+        >
+          How it Works
+        </button>
+
+        <Link
+          to="/browse"
+          className="hover:text-primary transition duration-200"
+        >
+          Browse Needs
+        </Link>
+
+        <button
+          onClick={() => window.scrollTo({ top: 2000, behavior: "smooth" })}
+          className="cursor-pointer hover:text-primary transition duration-200"
+        >
+          About Us
+        </button>
 
       </div>
 
-      {/* RIGHT NAV */}
-      <div style={{ display: "flex", gap: "25px", alignItems: "center", position: "relative" }}>
+      {/* RIGHT */}
+      <div className="flex items-center gap-4">
 
-        {/* ✅ Only Home remains — Browse Needs and Donations removed */}
-        <Link to="/" style={{ textDecoration: "none", color: "#333" }}>
-          Home
-        </Link>
-
-        {/* USER */}
         {user ? (
+          <div className="relative" ref={menuRef}>
 
-          <div style={{ position: "relative" }}>
-
-            {/* Avatar */}
             <div
               onClick={() => setMenuOpen(!menuOpen)}
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "50%",
-                background: "#00563B",
-                color: "white",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: "bold",
-                cursor: "pointer"
-              }}
+              className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center font-semibold cursor-pointer hover:opacity-90 transition duration-200"
             >
               {avatarLetter}
             </div>
 
-            {/* DROPDOWN */}
             {menuOpen && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "45px",
-                  right: "0",
-                  background: "white",
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                  width: "170px"
-                }}
-              >
+              <div className="absolute right-0 mt-3 w-44 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
 
-                <div
+                <button
                   onClick={() => {
                     setMenuOpen(false);
                     navigate("/profile");
                   }}
-                  style={{ padding: "10px", cursor: "pointer" }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-200"
                 >
-                  👤 Profile
-                </div>
+                  Profile
+                </button>
 
-                <div
+                <button
                   onClick={() => {
                     setMenuOpen(false);
                     navigate("/donation-history");
                   }}
-                  style={{ padding: "10px", cursor: "pointer" }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-200"
                 >
-                  📊 My Donations
-                </div>
+                  My Donations
+                </button>
 
                 <button
                   onClick={handleLogout}
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    border: "none",
-                    background: "none",
-                    cursor: "pointer",
-                    textAlign: "left"
-                  }}
+                  className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition duration-200"
                 >
-                  ➜] Logout
+                  Logout
                 </button>
 
               </div>
             )}
 
           </div>
-
         ) : (
-
-          <Link
-            to="/login"
-            style={{
-              padding: "8px 16px",
-              background: "#00563B",
-              color: "white",
-              borderRadius: "6px",
-              textDecoration: "none",
-              fontWeight: "bold"
-            }}
-          >
-            Login
+          <Link to="/register">
+            <button className="bg-primary text-white px-5 py-2 rounded-full font-medium shadow-sm hover:shadow-md hover:bg-primaryDark transition duration-200">
+              Get Started
+            </button>
           </Link>
-
         )}
 
       </div>
