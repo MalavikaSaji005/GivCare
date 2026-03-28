@@ -1,211 +1,183 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { ref, onValue } from "firebase/database";
+
+import { db } from "../firebase";
 import Navbar from "../components/Navbar";
+
 import hero1 from "../assets/hero1.jpg";
 import hero2 from "../assets/hero2.jpg";
 import hero3 from "../assets/hero3.jpg";
 
+import HowItWorks from "../components/home/HowItWorks";
+import FeaturedNeeds from "../components/home/FeaturedNeeds";
+import Stats from "../components/home/Stats";
+import Testimonials from "../components/home/Testimonials";
+
 export default function Landing() {
+
+  const [needs, setNeeds] = useState([]);
+
+  useEffect(() => {
+    const needsRef = ref(db, "needs");
+
+    const unsubscribe = onValue(needsRef, (snapshot) => {
+      const data = snapshot.val();
+
+      if (data) {
+        const needsArray = Object.keys(data).map((key) => ({
+          id: key,
+          ...data[key],
+        }));
+
+        setNeeds(needsArray.slice(0, 3));
+      } else {
+        setNeeds([]);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   return (
-    <div
-      style={{
-        fontFamily: "Arial, sans-serif",
-        background: "#f0f7f4",
-        minHeight: "100vh"
-      }}
-    >
+    <div className="bg-background min-h-screen font-sans">
 
       {/* NAVBAR */}
       <Navbar />
 
       {/* HERO SECTION */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "90px 100px"
-        }}
-      >
+      <div className="flex flex-col md:flex-row items-center justify-between px-10 py-24 gap-12">
 
-        {/* TEXT */}
-        <div style={{ maxWidth: "520px" }}>
+        {/* LEFT */}
+        <div className="max-w-xl">
 
-          <h1
-            style={{
-              fontSize: "46px",
-              marginBottom: "20px",
-              color: "#00563B",
-              lineHeight: "1.2"
-            }}
-          >
-            A Verified Community <br /> Support Platform
+          <span className="bg-green-100 text-primary px-4 py-1 rounded-full text-xs font-bold tracking-wide">
+            COMMUNITY FIRST
+          </span>
+
+          <h1 className="text-5xl md:text-6xl font-bold text-textMain leading-tight mt-5">
+            Make a <br />
+            <span>Difference</span>{" "}
+            <span className="text-primary">Today</span>
           </h1>
 
-          <p
-            style={{
-              marginBottom: "35px",
-              color: "#555",
-              fontSize: "18px"
-            }}
-          >
-            Donate • Volunteer • Support Communities
+          <p className="mt-5 text-textSub text-lg leading-relaxed">
+            Empower lives by connecting donors, volunteers, and communities.
+            Every small act of kindness builds a stronger tomorrow.
           </p>
 
-          <Link to="/register">
-            <button style={primaryBtn}>Get Started</button>
-          </Link>
+          <div className="flex gap-4 mt-10">
 
-          <Link to="/browse">
-            <button style={secondaryBtn}>Browse Needs</button>
-          </Link>
+            <Link to="/browse">
+              <button className="bg-primary text-white px-7 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg hover:bg-primaryDark transition">
+                Explore Needs →
+              </button>
+            </Link>
 
+            <button className="border border-gray-300 text-primary px-7 py-3 rounded-xl font-semibold shadow-sm hover:shadow-md hover:bg-gray-50 transition">
+              Learn More
+            </button>
+
+          </div>
         </div>
 
-        {/* 🔥 IMAGE DEPTH SECTION */}
-        <div style={imageGrid}>
+        {/* RIGHT IMAGES */}
+        <div className="relative flex items-center justify-center">
 
-          <img src={hero1} alt="left" style={backImage} />
+          <img
+            src={hero1}
+            alt="left"
+            className="w-[180px] h-[320px] object-cover rounded-xl shadow-md transform scale-90 translate-y-6 opacity-90"
+          />
 
-          {/* CENTER IMAGE WITH GLOW */}
-          <div style={centerWrapper}>
-            <div style={glowStyle}></div>
-            <img src={hero2} alt="main" style={frontImage} />
+          <div className="relative mx-[-20px]">
+            <div className="absolute w-[260px] h-[420px] bg-primary/10 blur-3xl rounded-2xl"></div>
+
+            <img
+              src={hero2}
+              alt="main"
+              className="w-[250px] h-[440px] object-cover rounded-2xl shadow-xl transform -translate-y-6 z-10 relative"
+            />
           </div>
 
-          <img src={hero3} alt="right" style={backImage} />
+          <img
+            src={hero3}
+            alt="right"
+            className="w-[180px] h-[320px] object-cover rounded-xl shadow-md transform scale-90 translate-y-6 opacity-90"
+          />
+
+          {/* FLOATING BADGE */}
+          <div className="absolute bottom-[-25px] left-1/2 transform -translate-x-1/2 bg-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3">
+
+            <div className="w-9 h-9 bg-orange-100 text-orange-600 flex items-center justify-center rounded-full">
+              ❤️
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-textMain">
+                2.4k+ Active Volunteers
+              </p>
+              <p className="text-xs text-textSub">
+                Making impact every day
+              </p>
+            </div>
+
+          </div>
 
         </div>
-
       </div>
 
+      {/* HOW IT WORKS */}
+      <HowItWorks />
 
-      {/* FEATURES */}
-      <div style={{ padding: "60px 80px" }}>
+      {/* FEATURED NEEDS */}
+      <FeaturedNeeds needs={needs} />
 
-        <h2 style={sectionTitle}>What You Can Do</h2>
+      {/* STATS */}
+      <Stats />
 
-        <div style={featuresGrid}>
+      {/* TESTIMONIALS */}
+      <Testimonials />
 
-          <div style={featureCard}>
-            <h3>Donate Essentials</h3>
-            <p>Help communities with essential items.</p>
-          </div>
+      {/* CTA */}
+      <div className="mx-10 my-20 bg-primary text-white rounded-2xl p-14 text-center">
 
-          <div style={featureCard}>
-            <h3>Volunteer</h3>
-            <p>Contribute your time and skills.</p>
-          </div>
+        <h2 className="text-3xl md:text-4xl font-semibold leading-tight">
+          Ready to start your journey?
+        </h2>
 
-          <div style={featureCard}>
-            <h3>Companion Support</h3>
-            <p>Support elderly with care assistance.</p>
-          </div>
+        <p className="mt-5 text-white/80 text-base md:text-lg max-w-xl mx-auto leading-relaxed">
+          Join thousands of people who are already making a difference in their
+          communities. Your first step starts here.
+        </p>
 
-        </div>
+        <Link to="/register">
+          <button className="mt-8 bg-white text-primary px-8 py-3 rounded-full font-medium text-sm hover:bg-gray-100 transition">
+            Join the Community
+          </button>
+        </Link>
 
       </div>
 
       {/* FOOTER */}
-      <footer style={footer}>
-        © 2026 GivCare – Community Support Platform
+      <footer className="flex flex-col md:flex-row justify-between items-center px-10 py-8 bg-[#eef2f1] text-sm text-black gap-4">
+
+        <div>
+          <h3 className="text-primary font-semibold text-lg">GivCare</h3>
+          <p className="text-xs mt-1">
+            © 2026 GivCare. Built for the Human Sanctuary.
+          </p>
+        </div>
+
+        <div className="flex gap-6 text-xs">
+          <span className="cursor-pointer hover:text-primary">Privacy Policy</span>
+          <span className="cursor-pointer hover:text-primary">Terms of services</span>
+          <span className="cursor-pointer hover:text-primary">Contact us</span>
+          <span className="cursor-pointer hover:text-primary">FAQ</span>
+        </div>
+
       </footer>
 
     </div>
   );
 }
-
-
-/* 🔥 STYLES */
-
-const imageGrid = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: "0px"
-};
-
-const backImage = {
-  width: "200px",
-  height: "370px",
-  objectFit: "cover",
-  borderRadius: "12px",
-  transform: "scale(0.92) translateY(8px)", // 🔥 depth positioning
-  opacity: 0.9,
-  boxShadow: "0 12px 30px rgba(0,0,0,0.18)" // 🔥 improved shadow
-};
-
-const frontImage = {
-  width: "270px",
-  height: "470px",
-  objectFit: "cover",
-  borderRadius: "14px",
-  boxShadow: "0 25px 60px rgba(0,0,0,0.25)", // 🔥 strongest shadow
-  transform: "translateY(-12px)",
-  position: "relative",
-  zIndex: 2
-};
-
-const centerWrapper = {
-  position: "relative",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center"
-};
-
-const glowStyle = {
-  position: "absolute",
-  width: "300px",
-  height: "500px",
-  background: "rgba(0, 86, 59, 0.08)",
-  filter: "blur(50px)",
-  borderRadius: "20px",
-  zIndex: 1
-};
-
-const primaryBtn = {
-  padding: "13px 28px",
-  marginRight: "15px",
-  background: "#00563B",
-  color: "white",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontWeight: "bold"
-};
-
-const secondaryBtn = {
-  padding: "13px 28px",
-  border: "1px solid #00563B",
-  borderRadius: "8px",
-  background: "white",
-  color: "#00563B",
-  fontWeight: "bold",
-  cursor: "pointer"
-};
-
-const sectionTitle = {
-  textAlign: "center",
-  color: "#00563B",
-  marginBottom: "45px",
-  fontSize: "28px"
-};
-
-const featuresGrid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-  gap: "28px"
-};
-
-const featureCard = {
-  background: "white",
-  padding: "28px",
-  borderRadius: "12px",
-  boxShadow: "0 6px 18px rgba(0,0,0,0.06)"
-};
-
-const footer = {
-  textAlign: "center",
-  padding: "20px",
-  background: "white",
-  marginTop: "40px"
-};
