@@ -15,7 +15,6 @@ export default function BrowseNeeds() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [priority, setPriority] = useState("all");
-  //const [location, setLocation] = useState("all");
   const [autoLocation, setAutoLocation] = useState("");
 
   const [selectedNeed, setSelectedNeed] = useState(null);
@@ -26,6 +25,7 @@ export default function BrowseNeeds() {
   const [donorLocation, setDonorLocation] = useState("");
   const [remark, setRemark] = useState("");
   const [donationDateTime, setDonationDateTime] = useState("");
+
   const handleDonateClick = (need) => {
     const user = auth.currentUser;
 
@@ -78,6 +78,7 @@ export default function BrowseNeeds() {
     });
 
   }, []);
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
@@ -99,9 +100,7 @@ export default function BrowseNeeds() {
 
           const state = data.address.state || "";
 
-          const place = `${city}, ${state}`;
-
-          setAutoLocation(place);
+          setAutoLocation(`${city}, ${state}`);
 
         } catch (error) {
           console.log("Location fetch failed:", error);
@@ -110,11 +109,9 @@ export default function BrowseNeeds() {
       });
     }
   }, []);
+
   // Filter
   const filteredNeeds = needs.filter((need) => {
-
-    // 'const matchesLocation =
-    //   location === "all" || need.location.toLowerCase() === location;'
 
     const matchesSearch =
       need.itemName.toLowerCase().includes(search.toLowerCase()) ||
@@ -123,6 +120,7 @@ export default function BrowseNeeds() {
     const matchesCategory =
       category === "all" ||
       need.category?.trim().toLowerCase() === category.toLowerCase();
+
     const matchesPriority =
       priority === "all" || need.priority === priority;
 
@@ -168,16 +166,6 @@ export default function BrowseNeeds() {
             <option value="education">Education</option>
             <option value="clothing">Clothing</option>
           </select>
-
-          {/* <select
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="p-3 border rounded-lg"
-          >
-            <option value="all">All Locations</option>
-            <option value="kochi">Kochi</option>
-            <option value="trivandrum">Trivandrum</option>
-          </select> */}
 
           <select
             value={priority}
@@ -229,7 +217,16 @@ export default function BrowseNeeds() {
                   {need.itemName}
                 </h3>
 
-                <p className="text-sm text-gray-500">
+                {/* ✅ ONLY CHANGE: institution name is now clickable */}
+                <p
+                  className="text-sm font-medium cursor-pointer hover:underline"
+                  style={{ color: "#00563B" }}
+                  onClick={() => {
+                    if (need.institutionId) {
+                      navigate(`/institution-profile/${need.institutionId}`);
+                    }
+                  }}
+                >
                   {need.institution}
                 </p>
 
@@ -316,6 +313,7 @@ export default function BrowseNeeds() {
               onChange={(e) => setRemark(e.target.value)}
               className="w-full p-2 border rounded mb-3"
             />
+
             {error && (
               <p className="text-red-500 text-sm mb-2">{error}</p>
             )}
@@ -359,23 +357,19 @@ export default function BrowseNeeds() {
                     setLoading(false);
                     return;
                   }
+
                   const formatDateTime = (value) => {
                     const date = new Date(value);
-
                     const day = String(date.getDate()).padStart(2, "0");
                     const month = String(date.getMonth() + 1).padStart(2, "0");
                     const year = date.getFullYear();
-
                     let hours = date.getHours();
                     const minutes = String(date.getMinutes()).padStart(2, "0");
-
                     const ampm = hours >= 12 ? "PM" : "AM";
                     hours = hours % 12 || 12;
-
                     return `${day}-${month}-${year} ${hours}:${minutes} ${ampm}`;
                   };
-                  // ✅ Only save the donation record with status "Pending"
-                  // ✅ NO update to 'donated' count — institution confirms first
+
                   const newDonation = {
                     userId: auth.currentUser.uid,
                     donorName: donorName || user.displayName || "Anonymous",
@@ -393,9 +387,6 @@ export default function BrowseNeeds() {
                   };
 
                   await push(ref(db, "donations"), newDonation);
-
-                  // ✅ REMOVED the update() that was updating donated count immediately
-                  // Donated count will only update when institution clicks "Mark as Received"
 
                   toast.success("Donation submitted! Waiting for institution to confirm.");
 
