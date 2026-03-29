@@ -41,12 +41,17 @@ export default function DashboardLayout({ children }) {
     fontWeight: "500"
   });
 
+  // ✅ ONLY CHANGE: compute active states for institution links
+  const searchParams = new URLSearchParams(location.search);
+  const isConfirmationsActive = location.pathname === "/institution" && searchParams.get("view") === "confirmations";
+  const isInstitutionActive = location.pathname === "/institution" && !isConfirmationsActive;
+
   return (
     <div style={{ background: "#F0F7F4", minHeight: "100vh" }}>
       <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
       <div style={{ display: "flex" }}>
-        
+
         {/* SIDEBAR */}
         {sidebarOpen && (
           <div
@@ -68,73 +73,121 @@ export default function DashboardLayout({ children }) {
             </h3>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              
-              {/* MAIN LINKS */}
-              <NavLink to="/dashboard" style={linkStyle}>
-                🏠 Dashboard Home
-              </NavLink>
 
-              <NavLink to="/browse" style={linkStyle}>
-                📦 Browse Needs
-              </NavLink>
+              {role === "institution" ? (
+                <>
+                  <NavLink to="/dashboard" style={linkStyle}>
+                    🏠 Dashboard Home
+                  </NavLink>
 
-              <NavLink to="/donation-history" style={linkStyle}>
-                📊 Donation History
-              </NavLink>
-
-              {/* 🔥 SUPPORT HUB */}
-              <div>
-                <div
-                  onClick={() => setSupportOpen(!supportOpen)}
-                  style={{
-                    cursor: "pointer",
-                    padding: "10px 12px",
-                    borderRadius: "6px",
-                    fontWeight: "600",
-                    color: "#333",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center"
-                  }}
-                >
-                  <span>🤝 Support Hub</span>
-                  <span>{supportOpen ? "▲" : "▼"}</span>
-                </div>
-
-                {/* DROPDOWN */}
-                {supportOpen && (
-                  <div
+                  {/* ✅ ONLY CHANGE: manual style instead of NavLink active */}
+                  <NavLink
+                    to="/institution"
                     style={{
-                      marginLeft: "12px",
-                      marginTop: "8px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "8px"
+                      textDecoration: "none",
+                      color: isInstitutionActive ? "white" : "#333",
+                      background: isInstitutionActive ? "#00563B" : "transparent",
+                      padding: "10px 12px",
+                      borderRadius: "6px",
+                      display: "block",
+                      fontWeight: "500"
                     }}
                   >
-                    <NavLink to="/support" end style={linkStyle}>
-                      📊 Dashboard
-                    </NavLink>
+                    🏢 Institution Dashboard
+                  </NavLink>
 
-                    <NavLink to="/support/request" style={linkStyle}>
-                      ➕ Request Help
-                    </NavLink>
+                  {/* ✅ ONLY CHANGE: manual style instead of NavLink active */}
+                  <NavLink
+                    to="/institution?view=confirmations"
+                    style={{
+                      textDecoration: "none",
+                      color: isConfirmationsActive ? "white" : "#333",
+                      background: isConfirmationsActive ? "#00563B" : "transparent",
+                      padding: "10px 12px",
+                      borderRadius: "6px",
+                      display: "block",
+                      fontWeight: "500"
+                    }}
+                  >
+                    🔔 Pending Confirmations
+                  </NavLink>
 
-                    <NavLink to="/support/offer" style={linkStyle}>
-                      🤝 Offer Help
-                    </NavLink>
+                  <NavLink to="/volunteers" style={linkStyle}>
+                    🤝 Volunteers
+                  </NavLink>
 
-                    <NavLink to="/support/activity" style={linkStyle}>
-                      📌 My Activity
-                    </NavLink>
+                  <NavLink to="/companions" style={linkStyle}>
+                    ❤️ Companions
+                  </NavLink>
+
+                  <NavLink to="/profile" style={linkStyle}>
+                    👤 Profile
+                  </NavLink>
+                </>
+              ) : (
+                <>
+                  <NavLink to="/dashboard" style={linkStyle}>
+                    🏠 Dashboard Home
+                  </NavLink>
+
+                  <NavLink to="/browse" style={linkStyle}>
+                    📦 Browse Needs
+                  </NavLink>
+
+                  <NavLink to="/donation-history" style={linkStyle}>
+                    📊 Donation History
+                  </NavLink>
+
+                  <div>
+                    <div
+                      onClick={() => setSupportOpen(!supportOpen)}
+                      style={{
+                        cursor: "pointer",
+                        padding: "10px 12px",
+                        borderRadius: "6px",
+                        fontWeight: "600",
+                        color: "#333",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center"
+                      }}
+                    >
+                      <span>🤝 Support Hub</span>
+                      <span>{supportOpen ? "▲" : "▼"}</span>
+                    </div>
+
+                    {supportOpen && (
+                      <div
+                        style={{
+                          marginLeft: "12px",
+                          marginTop: "8px",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "8px"
+                        }}
+                      >
+                        <NavLink to="/support" end style={linkStyle}>
+                          📊 Dashboard
+                        </NavLink>
+                        <NavLink to="/support/request" style={linkStyle}>
+                          ➕ Request Help
+                        </NavLink>
+                        <NavLink to="/support/offer" style={linkStyle}>
+                          🤝 Offer Help
+                        </NavLink>
+                        <NavLink to="/support/activity" style={linkStyle}>
+                          📌 My Activity
+                        </NavLink>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* PROFILE */}
-              <NavLink to="/profile" style={linkStyle}>
-                👤 Profile
-              </NavLink>
+                  <NavLink to="/profile" style={linkStyle}>
+                    👤 Profile
+                  </NavLink>
+                </>
+              )}
+
             </div>
           </div>
         )}
