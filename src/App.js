@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { Toaster } from "react-hot-toast";
 
@@ -9,6 +9,8 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
+import ProfileSetup from "./pages/ProfileSetup";
+import InstitutionProfile from "./pages/InstitutionProfile";
 import BrowseNeeds from "./pages/BrowseNeeds";
 import InstitutionDashboard from "./pages/InstitutionDashboard";
 import DonationHistory from "./pages/DonationHistory";
@@ -19,6 +21,13 @@ import SupportDashboard from "./pages/support/SupportDashboard";
 import RequestSupport from "./pages/support/RequestSupport";
 import OfferSupport from "./pages/support/OfferSupport";
 import MyActivity from "./pages/support/MyActivity";
+
+// ✅ Wrapper to pass role from location state to ProfileSetup
+function ProfileSetupWrapper() {
+  const location = useLocation();
+  const role = location.state?.role || "donor";
+  return <ProfileSetup role={role} />;
+}
 
 function App() {
 
@@ -36,8 +45,27 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* PROTECTED */}
+          {/* ✅ Profile setup — shown right after registration */}
+          <Route
+            path="/profile-setup"
+            element={
+              <ProtectedRoute>
+                <ProfileSetupWrapper />
+              </ProtectedRoute>
+            }
+          />
 
+          {/* ✅ Institution public profile page */}
+          <Route
+            path="/institution-profile/:institutionId"
+            element={
+              <ProtectedRoute>
+                <InstitutionProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* PROTECTED */}
           <Route
             path="/dashboard"
             element={
@@ -88,42 +116,10 @@ function App() {
           />
 
           {/* SUPPORT HUB */}
-
-          <Route
-            path="/support"
-            element={
-              <ProtectedRoute>
-                <SupportDashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/support/request"
-            element={
-              <ProtectedRoute>
-                <RequestSupport />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/support/offer"
-            element={
-              <ProtectedRoute>
-                <OfferSupport />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/support/activity"
-            element={
-              <ProtectedRoute>
-                <MyActivity />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/support" element={<ProtectedRoute><SupportDashboard /></ProtectedRoute>} />
+          <Route path="/support/request" element={<ProtectedRoute><RequestSupport /></ProtectedRoute>} />
+          <Route path="/support/offer" element={<ProtectedRoute><OfferSupport /></ProtectedRoute>} />
+          <Route path="/support/activity" element={<ProtectedRoute><MyActivity /></ProtectedRoute>} />
 
           {/* FALLBACK */}
           <Route path="*" element={<Navigate to="/" />} />
