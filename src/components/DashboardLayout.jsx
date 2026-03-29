@@ -54,11 +54,12 @@ export default function DashboardLayout({ children }) {
         {/* SIDEBAR (FIXED) */}
         {sidebarOpen && (
           <div className="w-[240px] fixed top-[70px] bottom-0 left-0 z-40">
+            {/* pass role for future (important) */}
             <UserSidebar
               linkStyle={linkStyle}
               supportOpen={supportOpen}
               setSupportOpen={setSupportOpen}
-              role={role}   {/* 🔥 pass role for future (important) */}
+              role={role}   
             />
           </div>
         )}
