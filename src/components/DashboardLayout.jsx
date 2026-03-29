@@ -1,8 +1,9 @@
-import { NavLink, useLocation } from "react-router-dom";
-import Navbar from "./Navbar";
+import Navbar from "./UserNavbar";
 import { useState, useEffect } from "react";
 import { ref, onValue } from "firebase/database";
 import { db, auth } from "../firebase";
+import UserSidebar from "./UserSidebar";
+import { useLocation } from "react-router-dom";
 
 export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -11,7 +12,7 @@ export default function DashboardLayout({ children }) {
 
   const location = useLocation();
 
-  // FETCH USER ROLE
+  // FETCH ROLE
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) return;
@@ -23,177 +24,51 @@ export default function DashboardLayout({ children }) {
     });
   }, []);
 
-  // AUTO OPEN SUPPORT HUB
+  // AUTO OPEN SUPPORT
   useEffect(() => {
     if (location.pathname.startsWith("/support")) {
       setSupportOpen(true);
     }
   }, [location.pathname]);
 
-  // NORMAL LINK STYLE
   const linkStyle = ({ isActive }) => ({
     textDecoration: "none",
-    color: isActive ? "white" : "#333",
-    background: isActive ? "#00563B" : "transparent",
+    background: isActive ? "#E6F4EF" : "transparent",
     padding: "10px 12px",
-    borderRadius: "6px",
+    borderRadius: "8px",
     display: "block",
-    fontWeight: "500"
+    transition: "all 0.2s ease"
   });
 
-  // ✅ ONLY CHANGE: compute active states for institution links
-  const searchParams = new URLSearchParams(location.search);
-  const isConfirmationsActive = location.pathname === "/institution" && searchParams.get("view") === "confirmations";
-  const isInstitutionActive = location.pathname === "/institution" && !isConfirmationsActive;
-
   return (
-    <div style={{ background: "#F0F7F4", minHeight: "100vh" }}>
-      <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+    <div className="h-screen overflow-hidden bg-[#F8FAF9]">
 
-      <div style={{ display: "flex" }}>
+      {/* NAVBAR (FIXED) */}
+      <div className="h-[70px] fixed top-0 left-0 right-0 z-50">
+        <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+      </div>
 
-        {/* SIDEBAR */}
+      {/* BODY */}
+      <div className="flex pt-[70px] h-full">
+
+        {/* SIDEBAR (FIXED) */}
         {sidebarOpen && (
-          <div
-            style={{
-              width: "240px",
-              background: "white",
-              borderRight: "1px solid #e5e7eb",
-              padding: "25px"
-            }}
-          >
-            <h3
-              style={{
-                marginBottom: "25px",
-                color: "#00563B",
-                fontWeight: "bold"
-              }}
-            >
-              Dashboard
-            </h3>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-
-              {role === "institution" ? (
-                <>
-                  <NavLink to="/dashboard" style={linkStyle}>
-                    🏠 Dashboard Home
-                  </NavLink>
-
-                  {/* ✅ ONLY CHANGE: manual style instead of NavLink active */}
-                  <NavLink
-                    to="/institution"
-                    style={{
-                      textDecoration: "none",
-                      color: isInstitutionActive ? "white" : "#333",
-                      background: isInstitutionActive ? "#00563B" : "transparent",
-                      padding: "10px 12px",
-                      borderRadius: "6px",
-                      display: "block",
-                      fontWeight: "500"
-                    }}
-                  >
-                    🏢 Institution Dashboard
-                  </NavLink>
-
-                  {/* ✅ ONLY CHANGE: manual style instead of NavLink active */}
-                  <NavLink
-                    to="/institution?view=confirmations"
-                    style={{
-                      textDecoration: "none",
-                      color: isConfirmationsActive ? "white" : "#333",
-                      background: isConfirmationsActive ? "#00563B" : "transparent",
-                      padding: "10px 12px",
-                      borderRadius: "6px",
-                      display: "block",
-                      fontWeight: "500"
-                    }}
-                  >
-                    🔔 Pending Confirmations
-                  </NavLink>
-
-                  <NavLink to="/volunteers" style={linkStyle}>
-                    🤝 Volunteers
-                  </NavLink>
-
-                  <NavLink to="/companions" style={linkStyle}>
-                    ❤️ Companions
-                  </NavLink>
-
-                  <NavLink to="/profile" style={linkStyle}>
-                    👤 Profile
-                  </NavLink>
-                </>
-              ) : (
-                <>
-                  <NavLink to="/dashboard" style={linkStyle}>
-                    🏠 Dashboard Home
-                  </NavLink>
-
-                  <NavLink to="/browse" style={linkStyle}>
-                    📦 Browse Needs
-                  </NavLink>
-
-                  <NavLink to="/donation-history" style={linkStyle}>
-                    📊 Donation History
-                  </NavLink>
-
-                  <div>
-                    <div
-                      onClick={() => setSupportOpen(!supportOpen)}
-                      style={{
-                        cursor: "pointer",
-                        padding: "10px 12px",
-                        borderRadius: "6px",
-                        fontWeight: "600",
-                        color: "#333",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center"
-                      }}
-                    >
-                      <span>🤝 Support Hub</span>
-                      <span>{supportOpen ? "▲" : "▼"}</span>
-                    </div>
-
-                    {supportOpen && (
-                      <div
-                        style={{
-                          marginLeft: "12px",
-                          marginTop: "8px",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "8px"
-                        }}
-                      >
-                        <NavLink to="/support" end style={linkStyle}>
-                          📊 Dashboard
-                        </NavLink>
-                        <NavLink to="/support/request" style={linkStyle}>
-                          ➕ Request Help
-                        </NavLink>
-                        <NavLink to="/support/offer" style={linkStyle}>
-                          🤝 Offer Help
-                        </NavLink>
-                        <NavLink to="/support/activity" style={linkStyle}>
-                          📌 My Activity
-                        </NavLink>
-                      </div>
-                    )}
-                  </div>
-
-                  <NavLink to="/profile" style={linkStyle}>
-                    👤 Profile
-                  </NavLink>
-                </>
-              )}
-
-            </div>
+          <div className="w-[240px] fixed top-[70px] bottom-0 left-0 z-40">
+            <UserSidebar
+              linkStyle={linkStyle}
+              supportOpen={supportOpen}
+              setSupportOpen={setSupportOpen}
+              role={role}   {/* 🔥 pass role for future (important) */}
+            />
           </div>
         )}
 
-        {/* MAIN CONTENT */}
-        <div style={{ flex: 1, padding: "35px" }}>
+        {/* CONTENT SCROLL ONLY */}
+        <div
+          className={`flex-1 overflow-y-auto p-6 ${
+            sidebarOpen ? "ml-[240px]" : ""
+          }`}
+        >
           {children}
         </div>
 

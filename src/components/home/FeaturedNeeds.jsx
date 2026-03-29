@@ -60,7 +60,7 @@ export default function FeaturedNeeds({ needs = [] }) {
 
           <button className="flex items-center text-primary text-sm font-medium group mt-2">
             <span>View all needs</span>
-            <span className="ml-4 text-[25px] leading-none relative -top-[1.5px] transition-transform group-hover:translate-x-1">
+            <span className="ml-4 text-[25px] leading-none relative -top-[1.5px] transition-transform duration-200 group-hover:translate-x-1">
                 ›
             </span>
           </button>
@@ -83,7 +83,10 @@ export default function FeaturedNeeds({ needs = [] }) {
             return (
               <div
                 key={item.id}
-                className="bg-white rounded-[20px] shadow-[0_6px_20px_rgba(0,0,0,0.06)] border border-gray-100 overflow-hidden transition hover:shadow-md"
+                className="group bg-white rounded-[20px] border border-gray-100 overflow-hidden 
+                shadow-[0_6px_20px_rgba(0,0,0,0.06)]
+                transition-all duration-300 ease-in-out 
+                hover:-translate-y-2 hover:shadow-xl"
               >
 
                 {/* IMAGE */}
@@ -91,7 +94,7 @@ export default function FeaturedNeeds({ needs = [] }) {
                   <img
                     src={imageSrc}
                     alt="need"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition duration-300 ease-in-out group-hover:scale-105"
                   />
 
                   {/* BADGE */}
@@ -126,9 +129,9 @@ export default function FeaturedNeeds({ needs = [] }) {
                         <span>{item.progress}%</span>
                       </div>
 
-                      <div className="w-full h-2 bg-gray-200 rounded-full">
+                      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div
-                          className="h-2 bg-primary rounded-full"
+                          className="h-2 bg-primary rounded-full transition-all duration-500"
                           style={{ width: `${item.progress}%` }}
                         ></div>
                       </div>
@@ -136,7 +139,7 @@ export default function FeaturedNeeds({ needs = [] }) {
                   )}
 
                   <button
-                    className={`mt-5 w-full py-3 rounded-full text-sm font-medium transition
+                    className={`mt-5 w-full py-3 rounded-full text-sm font-medium transition duration-200
                     ${item.type === "Urgent"
                       ? "bg-orange-500 text-white hover:bg-orange-600"
                       : "bg-primary text-white hover:bg-primaryDark"}

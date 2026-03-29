@@ -2,6 +2,9 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ref, onValue } from "firebase/database";
 
+import AOS from "aos";
+import "aos/dist/aos.css";
+
 import { db } from "../firebase";
 import Navbar from "../components/Navbar";
 
@@ -15,7 +18,6 @@ import Stats from "../components/home/Stats";
 import Testimonials from "../components/home/Testimonials";
 
 export default function Landing() {
-
   const [needs, setNeeds] = useState([]);
 
   useEffect(() => {
@@ -36,6 +38,12 @@ export default function Landing() {
       }
     });
 
+    AOS.init({
+      duration: 1000,
+      once: true,
+      easing: "ease-in-out",
+    });
+
     return () => unsubscribe();
   }, []);
 
@@ -46,7 +54,11 @@ export default function Landing() {
       <Navbar />
 
       {/* HERO SECTION */}
-      <div className="flex flex-col md:flex-row items-center justify-between px-10 py-24 gap-12">
+      <div
+        id="hero"
+        data-aos="fade-up"
+        className="flex flex-col md:flex-row items-center justify-between px-10 py-24 gap-12"
+      >
 
         {/* LEFT */}
         <div className="max-w-xl">
@@ -74,7 +86,15 @@ export default function Landing() {
               </button>
             </Link>
 
-            <button className="border border-gray-300 text-primary px-7 py-3 rounded-xl font-semibold shadow-sm hover:shadow-md hover:bg-gray-50 transition">
+            {/* ONLY CHANGE */}
+            <button
+              onClick={() =>
+                document
+                  .getElementById("how-it-works")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="border border-gray-300 text-primary px-7 py-3 rounded-xl font-semibold shadow-sm hover:shadow-md hover:bg-gray-50 transition"
+            >
               Learn More
             </button>
 
@@ -127,20 +147,29 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* HOW IT WORKS */}
-      <HowItWorks />
+      {/* ONLY ADDED IDs BELOW */}
 
-      {/* FEATURED NEEDS */}
-      <FeaturedNeeds needs={needs} />
+      <div id="how-it-works" data-aos="fade-up">
+        <HowItWorks />
+      </div>
 
-      {/* STATS */}
-      <Stats />
+      <div id="featured-needs" data-aos="fade-up">
+        <FeaturedNeeds needs={needs} />
+      </div>
 
-      {/* TESTIMONIALS */}
-      <Testimonials />
+      <div id="stats" data-aos="fade-up">
+        <Stats />
+      </div>
+
+      <div id="testimonials" data-aos="fade-up">
+        <Testimonials />
+      </div>
 
       {/* CTA */}
-      <div className="mx-10 my-20 bg-primary text-white rounded-2xl p-14 text-center">
+      <div
+        data-aos="zoom-in"
+        className="mx-10 my-20 bg-primary text-white rounded-2xl p-14 text-center"
+      >
 
         <h2 className="text-3xl md:text-4xl font-semibold leading-tight">
           Ready to start your journey?
