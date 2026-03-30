@@ -40,7 +40,7 @@ export default function DashboardLayout({ children }) {
     transition: "all 0.2s ease"
   });
 
-  // ✅ ADDED: active state for institution sidebar links
+  // ADDED: active state for institution sidebar links
   const institutionDashboardActive =
     location.pathname === "/institution" && !location.search;
 

@@ -14,7 +14,8 @@ import InstitutionProfile from "./pages/InstitutionProfile";
 import BrowseNeeds from "./pages/BrowseNeeds";
 import InstitutionDashboard from "./pages/InstitutionDashboard";
 import DonationHistory from "./pages/DonationHistory";
-import DashboardHome from "./pages/DashboardHome";
+import UserHome from "./pages/UserHome";
+import InstitutionHome from "./pages/InstitutionHome";
 
 /* Support Hub */
 import SupportDashboard from "./pages/support/SupportDashboard";
@@ -22,7 +23,7 @@ import RequestSupport from "./pages/support/RequestSupport";
 import OfferSupport from "./pages/support/OfferSupport";
 import MyActivity from "./pages/support/MyActivity";
 
-// ✅ Wrapper to pass role from location state to ProfileSetup
+// Wrapper
 function ProfileSetupWrapper() {
   const location = useLocation();
   const role = location.state?.role || "donor";
@@ -45,7 +46,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* ✅ Profile setup — shown right after registration */}
+          {/* Profile setup */}
           <Route
             path="/profile-setup"
             element={
@@ -55,7 +56,7 @@ function App() {
             }
           />
 
-          {/* ✅ Institution public profile page */}
+          {/* Institution public profile */}
           <Route
             path="/institution-profile/:institutionId"
             element={
@@ -65,16 +66,37 @@ function App() {
             }
           />
 
-          {/* PROTECTED */}
+          {/* USER HOME */}
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <DashboardHome />
+                <UserHome />
               </ProtectedRoute>
             }
           />
 
+          {/* INSTITUTION HOME */}
+          <Route
+            path="/institution"
+            element={
+              <ProtectedRoute>
+                <InstitutionHome />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* INSTITUTION DASHBOARD (ACTUAL WORK PAGE) */}
+          <Route
+            path="/institution/dashboard"
+            element={
+              <ProtectedRoute>
+                <InstitutionDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* BROWSE */}
           <Route
             path="/browse"
             element={
@@ -85,6 +107,7 @@ function App() {
             }
           />
 
+          {/* DONATION HISTORY */}
           <Route
             path="/donation-history"
             element={
@@ -97,20 +120,12 @@ function App() {
             }
           />
 
+          {/* PROFILE */}
           <Route
             path="/profile"
             element={
               <ProtectedRoute>
                 <Profile />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/institution"
-            element={
-              <ProtectedRoute>
-                <InstitutionDashboard />
               </ProtectedRoute>
             }
           />

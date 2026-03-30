@@ -1,29 +1,36 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home,
-  Package,
   BarChart3,
   HandHeart,
   PlusCircle,
   Activity,
   Building2,
-  Bell,
-
-  User
+  Bell
 } from "lucide-react";
 
 export default function UserSidebar({
   linkStyle,
   supportOpen,
   setSupportOpen,
-  role,
-  institutionDashboardActive,
-  confirmationsActive
+  role
 }) {
 
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Style for institution links that use manual active state
+  // INSTITUTION ACTIVE STATES (UNCHANGED)
+  const isInstitutionRoute = location.pathname === "/institution";
+
+  const isHomeActive =
+    isInstitutionRoute && location.search === "";
+
+  const isConfirmationsActive =
+    isInstitutionRoute && location.search === "?view=confirmations";
+
+  const isInstitutionDashboardActive =
+    location.pathname === "/institution/dashboard";
+
   const instLinkStyle = (isActive) => ({
     textDecoration: "none",
     background: isActive ? "#E6F4EF" : "transparent",
@@ -45,7 +52,9 @@ export default function UserSidebar({
 
   const linkInner = (isActive, icon, label) => (
     <div style={{
-      display: "flex", alignItems: "center", gap: "10px",
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
       color: isActive ? "#00563B" : "#374151",
       fontWeight: isActive ? "600" : "500",
       position: "relative"
@@ -79,32 +88,34 @@ export default function UserSidebar({
 
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
 
-        {/* ══════════════════════════════════════ */}
-        {/* ✅ INSTITUTION SIDEBAR                */}
-        {/* ══════════════════════════════════════ */}
+        {/* ================= INSTITUTION ================= */}
         {role === "institution" && (
           <>
-            {/* Dashboard Home */}
-            <NavLink to="/dashboard" style={linkStyle}>
-              {({ isActive }) => linkInner(isActive, <Home size={18} />, "Dashboard Home")}
-            </NavLink>
-
-            {/* Institution Dashboard - manual active */}
+            {/* HOME */}
             <div
-              style={instLinkStyle(institutionDashboardActive)}
+              style={instLinkStyle(isHomeActive)}
               onClick={() => navigate("/institution")}
             >
-              {linkInner(institutionDashboardActive, <Building2 size={18} />, "Institution Dashboard")}
+              {linkInner(isHomeActive, <Home size={18} />, "Home")}
             </div>
 
-            {/* Pending Confirmations - manual active */}
+            {/* INSTITUTION DASHBOARD */}
             <div
-              style={instLinkStyle(confirmationsActive)}
+              style={instLinkStyle(isInstitutionDashboardActive)}
+              onClick={() => navigate("/institution/dashboard")}
+            >
+              {linkInner(isInstitutionDashboardActive, <Building2 size={18} />, "Institution Needs")}
+            </div>
+
+            {/* PENDING CONFIRMATIONS */}
+            <div
+              style={instLinkStyle(isConfirmationsActive)}
               onClick={() => navigate("/institution?view=confirmations")}
             >
-              {linkInner(confirmationsActive, <Bell size={18} />, "Pending Confirmations")}
+              {linkInner(isConfirmationsActive, <Bell size={18} />, "Donation Requests")}
             </div>
-            {/* SUPPORT HUB (ADD THIS) */}
+
+            {/* SUPPORT HUB (FIXED - ADDED CONTENT) */}
             <div>
               <div
                 onClick={() => setSupportOpen(!supportOpen)}
@@ -134,7 +145,6 @@ export default function UserSidebar({
                   flexDirection: "column",
                   gap: "8px"
                 }}>
-
                   <NavLink to="/support" end style={linkStyle}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <BarChart3 size={16} />
@@ -162,61 +172,41 @@ export default function UserSidebar({
                       My Activity
                     </div>
                   </NavLink>
-
                 </div>
               )}
             </div>
-
-            {/* Profile */}
-            <NavLink to="/profile" style={linkStyle}>
-              {({ isActive }) => linkInner(isActive, <User size={18} />, "Profile")}
-            </NavLink>
           </>
         )}
 
-        {/* ══════════════════════════════════════ */}
-        {/* DONOR SIDEBAR — completely unchanged  */}
-        {/* ══════════════════════════════════════ */}
+        {/* ================= DONOR ================= */}
         {role !== "institution" && (
           <>
-            {/* DASHBOARD */}
             <NavLink to="/dashboard" style={linkStyle}>
-              {({ isActive }) => (
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", color: isActive ? "#00563B" : "#374151", fontWeight: isActive ? "600" : "500", position: "relative" }}>
-                  {isActive && <div style={activeBar} />}
-                  <Home size={18} />
-                  Home
-                </div>
-              )}
+              {({ isActive }) => linkInner(isActive, <Home size={18} />, "Home")}
             </NavLink>
 
-            {/* BROWSE */}
             <NavLink to="/browse" style={linkStyle}>
-              {({ isActive }) => (
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", color: isActive ? "#00563B" : "#374151", fontWeight: isActive ? "600" : "500", position: "relative" }}>
-                  {isActive && <div style={activeBar} />}
-                  <Package size={18} />
-                  Browse Needs
-                </div>
-              )}
+              {({ isActive }) => linkInner(isActive, <BarChart3 size={18} />, "Browse Needs")}
             </NavLink>
 
-            {/* DONATION HISTORY */}
             <NavLink to="/donation-history" style={linkStyle}>
-              {({ isActive }) => (
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", color: isActive ? "#00563B" : "#374151", fontWeight: isActive ? "600" : "500", position: "relative" }}>
-                  {isActive && <div style={activeBar} />}
-                  <BarChart3 size={18} />
-                  Donation History
-                </div>
-              )}
+              {({ isActive }) => linkInner(isActive, <Activity size={18} />, "Donation History")}
             </NavLink>
 
-            {/* SUPPORT HUB */}
+            {/* SUPPORT HUB (FIXED - added end) */}
             <div>
               <div
                 onClick={() => setSupportOpen(!supportOpen)}
-                style={{ cursor: "pointer", padding: "10px 12px", borderRadius: "8px", fontWeight: "600", color: "#374151", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                style={{
+                  cursor: "pointer",
+                  padding: "10px 12px",
+                  borderRadius: "8px",
+                  fontWeight: "600",
+                  color: "#374151",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center"
+                }}
               >
                 <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <HandHeart size={18} />
@@ -226,7 +216,13 @@ export default function UserSidebar({
               </div>
 
               {supportOpen && (
-                <div style={{ marginLeft: "15px", marginTop: "8px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{
+                  marginLeft: "15px",
+                  marginTop: "8px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px"
+                }}>
                   <NavLink to="/support" end style={linkStyle}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <BarChart3 size={16} />
@@ -257,7 +253,6 @@ export default function UserSidebar({
                 </div>
               )}
             </div>
-
           </>
         )}
 
