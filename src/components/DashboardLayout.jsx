@@ -40,6 +40,14 @@ export default function DashboardLayout({ children }) {
     transition: "all 0.2s ease"
   });
 
+  // ✅ ADDED: active state for institution sidebar links
+  const institutionDashboardActive =
+    location.pathname === "/institution" && !location.search;
+
+  const confirmationsActive =
+    location.pathname === "/institution" &&
+    location.search === "?view=confirmations";
+
   return (
     <div className="h-screen overflow-hidden bg-[#F8FAF9]">
 
@@ -54,12 +62,13 @@ export default function DashboardLayout({ children }) {
         {/* SIDEBAR (FIXED) */}
         {sidebarOpen && (
           <div className="w-[240px] fixed top-[70px] bottom-0 left-0 z-40">
-            {/* pass role for future (important) */}
             <UserSidebar
               linkStyle={linkStyle}
               supportOpen={supportOpen}
               setSupportOpen={setSupportOpen}
-              role={role}   
+              role={role}
+              institutionDashboardActive={institutionDashboardActive}
+              confirmationsActive={confirmationsActive}
             />
           </div>
         )}
