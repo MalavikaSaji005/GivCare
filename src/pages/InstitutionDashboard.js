@@ -152,9 +152,9 @@ const InstitutionDashboard = () => {
     <DashboardLayout>
 
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-10">
         <div>
-          <h1 className="text-3xl font-bold text-[#00563B]">Institution Dashboard</h1>
+          <h1 className="text-3xl font-bold text-[#00563B] space-y-6 mt-4">Institution Dashboard</h1>
           <p className="text-gray-500 mt-1">Manage and track community needs.</p>
         </div>
         <button
@@ -173,9 +173,9 @@ const InstitutionDashboard = () => {
               <p className="text-gray-500 text-sm font-medium">Active Needs</p>
               <h2 className="text-3xl font-bold text-[#00563B] mt-2">{needs.length}</h2>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-blue-500">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-primary">
               <p className="text-gray-500 text-sm font-medium">Pending Confirmations</p>
-              <h2 className="text-3xl font-bold text-blue-600 mt-2">{pendingDonations.length}</h2>
+              <h2 className="text-3xl font-bold text-primary mt-2">{pendingDonations.length}</h2>
             </div>
             <div className="bg-white p-6 rounded-xl shadow-sm border">
               <p className="text-gray-500 text-sm font-medium">Completed Needs</p>
@@ -202,7 +202,7 @@ const InstitutionDashboard = () => {
                     <th className="p-4">Item Name</th>
                     <th className="p-4">Goal</th>
                     <th className="p-4">Priority</th>
-                    <th className="p-4 text-blue-600 font-bold">Donated</th>
+                    <th className="p-4 text-primary font-bold">Donated</th>
                     <th className="p-4">Actions</th>
                   </tr>
                 </thead>
