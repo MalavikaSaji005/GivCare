@@ -8,8 +8,7 @@ import {
   Activity,
   Building2,
   Bell,
-  Users,
-  Heart,
+
   User
 } from "lucide-react";
 
@@ -105,16 +104,68 @@ export default function UserSidebar({
             >
               {linkInner(confirmationsActive, <Bell size={18} />, "Pending Confirmations")}
             </div>
+            {/* SUPPORT HUB (ADD THIS) */}
+            <div>
+              <div
+                onClick={() => setSupportOpen(!supportOpen)}
+                style={{
+                  cursor: "pointer",
+                  padding: "10px 12px",
+                  borderRadius: "8px",
+                  fontWeight: "600",
+                  color: "#374151",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center"
+                }}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <HandHeart size={18} />
+                  Support Hub
+                </span>
+                <span>{supportOpen ? "▲" : "▼"}</span>
+              </div>
 
-            {/* Volunteers */}
-            <NavLink to="/volunteer/dashboard" style={linkStyle}>
-              {({ isActive }) => linkInner(isActive, <Users size={18} />, "Volunteers")}
-            </NavLink>
+              {supportOpen && (
+                <div style={{
+                  marginLeft: "15px",
+                  marginTop: "8px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px"
+                }}>
 
-            {/* Companions */}
-            <NavLink to="/companion/dashboard" style={linkStyle}>
-              {({ isActive }) => linkInner(isActive, <Heart size={18} />, "Companions")}
-            </NavLink>
+                  <NavLink to="/support" end style={linkStyle}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <BarChart3 size={16} />
+                      Dashboard
+                    </div>
+                  </NavLink>
+
+                  <NavLink to="/support/request" style={linkStyle}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <PlusCircle size={16} />
+                      Request Help
+                    </div>
+                  </NavLink>
+
+                  <NavLink to="/support/offer" style={linkStyle}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <HandHeart size={16} />
+                      Offer Help
+                    </div>
+                  </NavLink>
+
+                  <NavLink to="/support/activity" style={linkStyle}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <Activity size={16} />
+                      My Activity
+                    </div>
+                  </NavLink>
+
+                </div>
+              )}
+            </div>
 
             {/* Profile */}
             <NavLink to="/profile" style={linkStyle}>
