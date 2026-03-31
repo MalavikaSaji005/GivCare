@@ -47,31 +47,39 @@ const InstitutionDashboard = () => {
 
   // --- FETCH PENDING DONATIONS ---
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) return;
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) return;
 
-    const donationsRef = ref(db, 'donations');
-    onValue(donationsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const list = Object.keys(data)
-          .map(key => ({ id: key, ...data[key] }))
-          .filter(d =>
-            d.institutionId === user.uid &&
-            ["pending", "completed"].includes(d.status?.toLowerCase())
-          );
-        setPendingDonations(list);
-      } else {
-        setPendingDonations([]);
-      }
+      const donationsRef = ref(db, 'donations');
+
+      onValue(donationsRef, (snapshot) => {
+        console.log("RAW DATA:", snapshot.val());
+        const data = snapshot.val();
+
+        if (data) {
+          const list = Object.keys(data)
+            .map(key => ({ id: key, ...data[key] }))
+            .filter(d =>
+              d.institutionId === user.uid &&
+              d.donorConfirmed === true &&
+              d.institutionConfirmed !== true
+            );
+
+          setPendingDonations(list);
+        } else {
+          setPendingDonations([]);
+        }
+      });
     });
+
+    return () => unsubscribe();
   }, []);
 
   // --- CONFIRM RECEIPT ---
   const handleConfirmReceipt = async (donation) => {
     try {
       await update(ref(db, `donations/${donation.id}`), {
-        status: "Received",
+        institutionConfirmed: true,
         receivedAt: new Date().toISOString(),
       });
       if (donation.needId) {
@@ -228,6 +236,7 @@ const InstitutionDashboard = () => {
                     ))}
                 </tbody>
               </table>
+
             </div>
           </div>
         </>
@@ -266,6 +275,7 @@ const InstitutionDashboard = () => {
                     Mark as Received
                   </button>
                 </div>
+
               ))}
             </div>
           )}
@@ -316,6 +326,7 @@ const InstitutionDashboard = () => {
                 <button type="button" onClick={closeModal} className="flex-1 py-3 bg-gray-100 rounded-xl font-bold">Cancel</button>
                 <button type="submit" className="flex-1 py-3 bg-[#00563B] text-white rounded-xl font-bold">Save</button>
               </div>
+
             </form>
           </div>
         </div>

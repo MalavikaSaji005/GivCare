@@ -110,7 +110,7 @@ export default function UserSidebar({
             {/* PENDING CONFIRMATIONS */}
             <div
               style={instLinkStyle(isConfirmationsActive)}
-              onClick={() => navigate("/institution?view=confirmations")}
+              onClick={() => navigate("/institution/dashboard?view=confirmations")}
             >
               {linkInner(isConfirmationsActive, <Bell size={18} />, "Donation Requests")}
             </div>

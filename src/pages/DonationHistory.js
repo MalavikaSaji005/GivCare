@@ -9,11 +9,20 @@ export default function DonationHistory({ donations, setDonations }) {
   const navigate = useNavigate();
   const [selectedDonation, setSelectedDonation] = useState(null);
 
+  const handleConfirm = async (id) => {
+    try {
+      await update(ref(db, `donations/${id}`), {
+        donorConfirmed: true
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
 
     const user = auth.currentUser;
 
-    // Redirect if not logged in
     if (!user) {
       navigate("/login");
       return;
@@ -26,13 +35,11 @@ export default function DonationHistory({ donations, setDonations }) {
       const data = snapshot.val();
 
       if (data) {
-
         const donationList = Object.keys(data)
           .map((key) => ({
             id: key,
             ...data[key]
           }))
-          // Show only logged-in user's donations
           .filter((donation) => donation.userId === user.uid);
 
         setDonations(donationList);
@@ -66,13 +73,12 @@ export default function DonationHistory({ donations, setDonations }) {
               className="flex items-center justify-between border rounded-lg p-4 hover:bg-gray-50 transition"
             >
 
-              {/* LEFT SIDE */}
+              {/* LEFT */}
               <div className="flex items-center gap-4 w-full">
 
                 <div className="w-12 h-12 bg-gray-200 rounded-md"></div>
 
                 <div className="flex-1">
-
                   <p className="text-xs text-gray-400">
                     ID: {donation.id}
                   </p>
@@ -89,53 +95,38 @@ export default function DonationHistory({ donations, setDonations }) {
                     Qty: {donation.quantity} |{" "}
                     {new Date(donation.date).toLocaleString("en-IN")}
                   </p>
-
                 </div>
 
               </div>
 
-              {/* RIGHT SIDE */}
+              {/* RIGHT */}
               <div className="flex items-center gap-3">
 
-                <span
-                  className={`px-3 py-1 rounded-full text-sm ${donation.status === "Pending"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : donation.status === "Confirmed"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-green-100 text-green-700"
-                    }`}
-                >
-                  {donation.status}
-                </span>
+                {!donation.donorConfirmed && (
+                  <>
+                    <span className="px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-700">
+                      Pending
+                    </span>
 
-                {donation.status === "Pending" && (
-                  <button
-                    onClick={() => {
-                      const donationRef = ref(db, `donations/${donation.id}`);
-
-                      update(donationRef, {
-                        status: "Confirmed"
-                      });
-                    }}
-                    className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-                  >
-                    Confirm
-                  </button>
+                    <button
+                      onClick={() => handleConfirm(donation.id)}
+                      className="bg-green-600 text-white px-3 py-1 rounded"
+                    >
+                      Confirm
+                    </button>
+                  </>
                 )}
 
-                {donation.status === "Confirmed" && (
-                  <button
-                    onClick={() => {
-                      const donationRef = ref(db, `donations/${donation.id}`);
+                {donation.donorConfirmed && !donation.institutionConfirmed && (
+                  <span className="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-700">
+                    Waiting for Institution
+                  </span>
+                )}
 
-                      update(donationRef, {
-                        status: "Completed"
-                      });
-                    }}
-                    className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-                  >
-                    Complete
-                  </button>
+                {donation.institutionConfirmed && (
+                  <span className="px-3 py-1 rounded-full text-sm bg-green-100 text-green-700">
+                    Completed
+                  </span>
                 )}
 
                 <button
@@ -155,8 +146,7 @@ export default function DonationHistory({ donations, setDonations }) {
 
       )}
 
-      {/* VIEW DETAILS MODAL */}
-
+      {/* MODAL */}
       {selectedDonation && (
 
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
@@ -167,38 +157,27 @@ export default function DonationHistory({ donations, setDonations }) {
               Donation Details
             </h2>
 
-            <p className="text-sm text-gray-500 mb-1">
-              ID: {selectedDonation.id}
-            </p>
-
+            <p>ID: {selectedDonation.id}</p>
             <p><strong>Item:</strong> {selectedDonation.itemName}</p>
             <p><strong>Institution:</strong> {selectedDonation.institution}</p>
             <p><strong>Quantity:</strong> {selectedDonation.quantity}</p>
-            <p><strong>Date:</strong> {selectedDonation.date}</p>
 
             <div className="mt-2">
               <strong>Status:</strong>{" "}
-              <span
-                className={`px-3 py-1 rounded-full text-sm ${selectedDonation.status === "Pending"
-                    ? "bg-yellow-100 text-yellow-700"
-                    : selectedDonation.status === "Confirmed"
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-green-100 text-green-700"
-                  }`}
-              >
-                {selectedDonation.status}
-              </span>
+
+              {!selectedDonation.donorConfirmed && "Pending"}
+              {selectedDonation.donorConfirmed && !selectedDonation.institutionConfirmed && "Waiting for Institution"}
+              {selectedDonation.institutionConfirmed && "Completed"}
+
             </div>
 
             <div className="flex justify-end mt-4">
-
               <button
                 onClick={() => setSelectedDonation(null)}
                 className="px-4 py-2 bg-gray-300 rounded"
               >
                 Close
               </button>
-
             </div>
 
           </div>
