@@ -58,7 +58,7 @@ const InstitutionDashboard = () => {
           .map(key => ({ id: key, ...data[key] }))
           .filter(d =>
             d.institutionId === user.uid &&
-            d.status?.toLowerCase() === "pending"
+            ["pending", "completed"].includes(d.status?.toLowerCase())
           );
         setPendingDonations(list);
       } else {
