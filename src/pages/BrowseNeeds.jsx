@@ -376,17 +376,22 @@ export default function BrowseNeeds() {
                     donorLocation: donorLocation || autoLocation,
                     remark: remark,
                     institutionId: selectedNeed.institutionId,
+                  };
+                  console.log("Institution ID:", selectedNeed.institutionId);
+                  const donationWithNeedId = {
+                    ...newDonation,
                     needId: selectedNeed.id,
                     institution: selectedNeed.institution,
                     itemName: selectedNeed.itemName,
                     quantity: Number(donationQty),
                     date: new Date().toISOString(),
-                    status: "Pending",
+                    donorConfirmed: false,
+                    institutionConfirmed: false,
                     isRead: false,
                     donationDateTime: formatDateTime(donationDateTime || new Date()),
                   };
 
-                  await push(ref(db, "donations"), newDonation);
+                  await push(ref(db, "donations"), donationWithNeedId);
 
                   toast.success("Donation submitted! Waiting for institution to confirm.");
 
