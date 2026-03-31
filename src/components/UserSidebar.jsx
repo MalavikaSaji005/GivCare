@@ -19,7 +19,6 @@ export default function UserSidebar({
   const navigate = useNavigate();
   const location = useLocation();
 
-  // INSTITUTION ACTIVE STATES (UNCHANGED)
   const isInstitutionRoute = location.pathname === "/institution";
 
   const isHomeActive =
@@ -91,7 +90,6 @@ export default function UserSidebar({
         {/* ================= INSTITUTION ================= */}
         {role === "institution" && (
           <>
-            {/* HOME */}
             <div
               style={instLinkStyle(isHomeActive)}
               onClick={() => navigate("/institution")}
@@ -99,7 +97,6 @@ export default function UserSidebar({
               {linkInner(isHomeActive, <Home size={18} />, "Home")}
             </div>
 
-            {/* INSTITUTION DASHBOARD */}
             <div
               style={instLinkStyle(isInstitutionDashboardActive)}
               onClick={() => navigate("/institution/dashboard")}
@@ -107,7 +104,6 @@ export default function UserSidebar({
               {linkInner(isInstitutionDashboardActive, <Building2 size={18} />, "Institution Needs")}
             </div>
 
-            {/* PENDING CONFIRMATIONS */}
             <div
               style={instLinkStyle(isConfirmationsActive)}
               onClick={() => navigate("/institution/dashboard?view=confirmations")}
@@ -115,7 +111,7 @@ export default function UserSidebar({
               {linkInner(isConfirmationsActive, <Bell size={18} />, "Donation Requests")}
             </div>
 
-            {/* SUPPORT HUB (FIXED - ADDED CONTENT) */}
+            {/* SUPPORT HUB */}
             <div>
               <div
                 onClick={() => setSupportOpen(!supportOpen)}
@@ -152,17 +148,11 @@ export default function UserSidebar({
                     </div>
                   </NavLink>
 
+                  {/* ONLY REQUEST HELP */}
                   <NavLink to="/support/request" style={linkStyle}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <PlusCircle size={16} />
                       Request Help
-                    </div>
-                  </NavLink>
-
-                  <NavLink to="/support/offer" style={linkStyle}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <HandHeart size={16} />
-                      Offer Help
                     </div>
                   </NavLink>
 
@@ -193,7 +183,7 @@ export default function UserSidebar({
               {({ isActive }) => linkInner(isActive, <Activity size={18} />, "Donation History")}
             </NavLink>
 
-            {/* SUPPORT HUB (FIXED - added end) */}
+            {/* SUPPORT HUB */}
             <div>
               <div
                 onClick={() => setSupportOpen(!supportOpen)}
@@ -230,13 +220,7 @@ export default function UserSidebar({
                     </div>
                   </NavLink>
 
-                  <NavLink to="/support/request" style={linkStyle}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <PlusCircle size={16} />
-                      Request Help
-                    </div>
-                  </NavLink>
-
+                  {/* ONLY OFFER HELP */}
                   <NavLink to="/support/offer" style={linkStyle}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <HandHeart size={16} />
