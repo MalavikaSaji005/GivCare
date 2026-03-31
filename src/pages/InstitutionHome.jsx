@@ -291,7 +291,7 @@ export default function InstitutionHome() {
 
             </div>
 
-            {/* ✅ UPDATED FLOAT BUTTON */}
+            {/* UPDATED FLOAT BUTTON */}
             <button
               onClick={() =>
                 navigate("/institution/dashboard", {

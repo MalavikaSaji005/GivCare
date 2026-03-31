@@ -3,6 +3,7 @@ import { signOut, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import logo from "../assets/logo.jpeg";
 import { useEffect, useState, useRef } from "react";
+import { ArrowLeft } from "lucide-react";
 
 export default function UserNavbar({ toggleSidebar }) {
 
@@ -43,10 +44,19 @@ export default function UserNavbar({ toggleSidebar }) {
   const avatarLetter = user?.email?.charAt(0).toUpperCase();
 
   return (
-    <nav className="w-full bg-white px-12 py-5 flex items-center justify-between shadow-sm">
+    <nav className="w-full bg-white pl-6 pr-12 py-5 flex items-center justify-between shadow-sm">
 
       {/* LEFT */}
       <div className="flex items-center gap-4">
+
+        {user && (
+          <button
+            onClick={() => navigate("/")}
+            className="ml-0 mr-1 p-1 rounded-md hover:bg-gray-100 transition"
+          >
+            <ArrowLeft size={20} className="text-primary" />
+          </button>
+        )}
 
         {toggleSidebar && (
           <button

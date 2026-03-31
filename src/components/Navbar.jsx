@@ -97,6 +97,23 @@ export default function Navbar({ toggleSidebar }) {
 
       {/* RIGHT */}
       <div className="flex items-center gap-4">
+        
+        {/* ADDED HOME (ONLY WHEN LOGGED IN) */}
+        {user && (
+          <button
+            onClick={() => {
+              const role = localStorage.getItem("role");
+              if (role === "institution") {
+                navigate("/institution");
+              } else {
+                navigate("/dashboard");
+              }
+            }}
+            className="cursor-pointer hover:text-primary transition duration-200"
+          >
+            Home
+          </button>
+        )}
 
         {user ? (
           <div className="relative" ref={menuRef}>
