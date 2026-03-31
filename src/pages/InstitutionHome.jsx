@@ -291,8 +291,15 @@ export default function InstitutionHome() {
 
             </div>
 
-            {/* FLOAT BUTTON */}
-            <button className="fixed bottom-6 right-6 bg-green-700 text-white w-14 h-14 rounded-full text-2xl shadow-lg hover:scale-105 transition">
+            {/* ✅ UPDATED FLOAT BUTTON */}
+            <button
+              onClick={() =>
+                navigate("/institution/dashboard", {
+                  state: { openModal: true },
+                })
+              }
+              className="fixed bottom-6 right-6 bg-green-700 text-white w-14 h-14 rounded-full text-2xl shadow-lg hover:scale-105 transition"
+            >
               +
             </button>
 
