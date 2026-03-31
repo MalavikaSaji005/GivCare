@@ -63,7 +63,7 @@ export default function BrowseNeeds() {
             institution: need.institutionName || "Institution",
             institutionId: need.institutionId || "",
             priority: need.priority ? need.priority.toLowerCase() : "normal",
-            location: "kochi",
+            location: need.location || "Unknown",
             category: need.category ? need.category.toLowerCase() : "food"
           };
 
@@ -189,7 +189,7 @@ export default function BrowseNeeds() {
         </div>
 
       </div>
-
+      {/*--------------------------------------------------------------------------------------------------------------- */}
       {/* NEED LIST */}
       <div className="bg-white rounded-xl shadow-md p-5 space-y-4">
 
