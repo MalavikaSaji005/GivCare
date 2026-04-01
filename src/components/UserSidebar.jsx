@@ -24,11 +24,15 @@ export default function UserSidebar({
   const isHomeActive =
     isInstitutionRoute && location.search === "";
 
+  // ✅ FIXED HERE
   const isConfirmationsActive =
-    isInstitutionRoute && location.search === "?view=confirmations";
+    location.pathname === "/institution/dashboard" &&
+    location.search.includes("view=confirmations");
 
+  // ✅ FIXED HERE
   const isInstitutionDashboardActive =
-    location.pathname === "/institution/dashboard";
+    location.pathname === "/institution/dashboard" &&
+    !location.search.includes("view=confirmations");
 
   const instLinkStyle = (isActive) => ({
     textDecoration: "none",
@@ -148,7 +152,6 @@ export default function UserSidebar({
                     </div>
                   </NavLink>
 
-                  {/* ONLY REQUEST HELP */}
                   <NavLink to="/support/request" style={linkStyle}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <PlusCircle size={16} />
@@ -220,7 +223,6 @@ export default function UserSidebar({
                     </div>
                   </NavLink>
 
-                  {/* ONLY OFFER HELP */}
                   <NavLink to="/support/offer" style={linkStyle}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <HandHeart size={16} />
